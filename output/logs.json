@@ -1,0 +1,590 @@
+[
+  {
+    "timestamp": "2026-04-20T12:10:01.609233",
+    "status": "info",
+    "message": "==================================================",
+    "provider": null,
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:10:01.609233",
+    "status": "info",
+    "message": "Starting ISP Plan Scraping Pipeline",
+    "provider": null,
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:10:01.609233",
+    "status": "info",
+    "message": "==================================================",
+    "provider": null,
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:10:01.609233",
+    "status": "info",
+    "message": "Running telstra scraper",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:10:01.609233",
+    "status": "info",
+    "message": "Starting Telstra scraper",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:10:02.661502",
+    "status": "error",
+    "message": "API request failed: 404 Client Error: Not Found for url: https://www.telstra.com.au/content/api/plans",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:10:25.491492",
+    "status": "error",
+    "message": "Playwright scraping error: Page.wait_for_selector: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\".plan-card, [data-testid=\\\"plan-card\\\"], .product-card\") to be visible\n",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:10:26.784077",
+    "status": "error",
+    "message": "All scraping methods failed for Telstra",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:10:26.784077",
+    "status": "warning",
+    "message": "No plans retrieved from telstra",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:10:26.784077",
+    "status": "info",
+    "message": "Running optus scraper",
+    "provider": "optus",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:10:26.784077",
+    "status": "info",
+    "message": "Starting Optus scraper",
+    "provider": "optus",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:10:57.110809",
+    "status": "error",
+    "message": "API request failed: HTTPSConnectionPool(host='www.optus.com.au', port=443): Read timed out. (read timeout=30)",
+    "provider": "optus",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:10:58.073918",
+    "status": "error",
+    "message": "Playwright scraping error: Page.goto: net::ERR_HTTP2_PROTOCOL_ERROR at https://www.optus.com.au/broadband/nbn\nCall log:\n  - navigating to \"https://www.optus.com.au/broadband/nbn\", waiting until \"load\"\n",
+    "provider": "optus",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:10:59.090312",
+    "status": "error",
+    "message": "All scraping methods failed for Optus",
+    "provider": "optus",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:10:59.090312",
+    "status": "warning",
+    "message": "No plans retrieved from optus",
+    "provider": "optus",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:10:59.093916",
+    "status": "info",
+    "message": "Running aussie scraper",
+    "provider": "aussie",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:10:59.093916",
+    "status": "info",
+    "message": "Starting Aussie Broadband scraper",
+    "provider": "aussie",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:10:59.356820",
+    "status": "error",
+    "message": "API request failed: 403 Client Error: Forbidden for url: https://www.aussiebroadband.com.au/api/plans",
+    "provider": "aussie",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:11:12.438872",
+    "status": "error",
+    "message": "Playwright scraping error: Page.wait_for_selector: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\".plan-card, .nbn-plan, [data-plan]\") to be visible\n",
+    "provider": "aussie",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:11:14.673887",
+    "status": "error",
+    "message": "All scraping methods failed for Aussie Broadband",
+    "provider": "aussie",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:11:14.674897",
+    "status": "warning",
+    "message": "No plans retrieved from aussie",
+    "provider": "aussie",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:11:14.676026",
+    "status": "info",
+    "message": "Running superloop scraper",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:11:14.677028",
+    "status": "info",
+    "message": "Starting Superloop scraper",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:11:15.733620",
+    "status": "error",
+    "message": "API request failed: 404 Client Error: Not Found for url: https://www.superloop.com/api/plans",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:11:32.030217",
+    "status": "error",
+    "message": "Playwright scraping error: Page.wait_for_selector: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\".plan-card, .broadband-plan, .product-tile\") to be visible\n",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:11:33.352599",
+    "status": "error",
+    "message": "All scraping methods failed for Superloop",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:11:33.352599",
+    "status": "warning",
+    "message": "No plans retrieved from superloop",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:11:33.352599",
+    "status": "error",
+    "message": "No plans scraped from any provider",
+    "provider": null,
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:12:47.879761",
+    "status": "info",
+    "message": "==================================================",
+    "provider": null,
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:12:47.879761",
+    "status": "info",
+    "message": "Starting ISP Plan Scraping Pipeline",
+    "provider": null,
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:12:47.879761",
+    "status": "info",
+    "message": "==================================================",
+    "provider": null,
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:12:47.882836",
+    "status": "info",
+    "message": "Running telstra scraper",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:12:47.883670",
+    "status": "info",
+    "message": "Starting Telstra scraper",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:12:48.506511",
+    "status": "error",
+    "message": "API request failed: 404 Client Error: Not Found for url: https://www.telstra.com.au/content/api/plans",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:13:05.539045",
+    "status": "error",
+    "message": "Playwright scraping error: Page.wait_for_selector: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\".plan-card, [data-testid=\\\"plan-card\\\"], .product-card\") to be visible\n",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:13:06.836775",
+    "status": "error",
+    "message": "All scraping methods failed for Telstra",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:13:06.836775",
+    "status": "warning",
+    "message": "No plans retrieved from telstra",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:13:06.836775",
+    "status": "info",
+    "message": "Running optus scraper",
+    "provider": "optus",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:13:06.836775",
+    "status": "info",
+    "message": "Starting Optus scraper",
+    "provider": "optus",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:13:28.757042",
+    "status": "error",
+    "message": "API request failed: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))",
+    "provider": "optus",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:13:29.731467",
+    "status": "error",
+    "message": "Playwright scraping error: Page.goto: net::ERR_HTTP2_PROTOCOL_ERROR at https://www.optus.com.au/broadband/nbn\nCall log:\n  - navigating to \"https://www.optus.com.au/broadband/nbn\", waiting until \"load\"\n",
+    "provider": "optus",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:13:30.730336",
+    "status": "error",
+    "message": "All scraping methods failed for Optus",
+    "provider": "optus",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:13:30.730336",
+    "status": "warning",
+    "message": "No plans retrieved from optus",
+    "provider": "optus",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:13:30.730336",
+    "status": "info",
+    "message": "Running aussie scraper",
+    "provider": "aussie",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:13:30.730336",
+    "status": "info",
+    "message": "Starting Aussie Broadband scraper",
+    "provider": "aussie",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:13:30.995965",
+    "status": "error",
+    "message": "API request failed: 403 Client Error: Forbidden for url: https://www.aussiebroadband.com.au/api/plans",
+    "provider": "aussie",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:13:44.145537",
+    "status": "error",
+    "message": "Playwright scraping error: Page.wait_for_selector: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\".plan-card, .nbn-plan, [data-plan]\") to be visible\n",
+    "provider": "aussie",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:13:45.424383",
+    "status": "error",
+    "message": "All scraping methods failed for Aussie Broadband",
+    "provider": "aussie",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:13:45.424383",
+    "status": "warning",
+    "message": "No plans retrieved from aussie",
+    "provider": "aussie",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:13:45.424383",
+    "status": "info",
+    "message": "Running superloop scraper",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:13:45.430336",
+    "status": "info",
+    "message": "Starting Superloop scraper",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:13:46.423746",
+    "status": "error",
+    "message": "API request failed: 404 Client Error: Not Found for url: https://www.superloop.com/api/plans",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:14:06.732116",
+    "status": "error",
+    "message": "Playwright scraping error: Page.wait_for_selector: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\".plan-card, .broadband-plan, .product-tile\") to be visible\n",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:14:08.021200",
+    "status": "error",
+    "message": "All scraping methods failed for Superloop",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:14:08.021200",
+    "status": "warning",
+    "message": "No plans retrieved from superloop",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:14:08.021200",
+    "status": "error",
+    "message": "No plans scraped from any provider",
+    "provider": null,
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:14:32.753069",
+    "status": "info",
+    "message": "==================================================",
+    "provider": null,
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:14:32.753069",
+    "status": "info",
+    "message": "Starting ISP Plan Scraping Pipeline",
+    "provider": null,
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:14:32.753069",
+    "status": "info",
+    "message": "==================================================",
+    "provider": null,
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:14:32.753069",
+    "status": "info",
+    "message": "Running telstra scraper",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:14:32.753069",
+    "status": "info",
+    "message": "Starting Telstra scraper",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:14:33.514667",
+    "status": "error",
+    "message": "API request failed: 404 Client Error: Not Found for url: https://www.telstra.com.au/content/api/plans",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:14:51.938200",
+    "status": "error",
+    "message": "Playwright scraping error: Page.wait_for_selector: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\".plan-card, [data-testid=\\\"plan-card\\\"], .product-card\") to be visible\n",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:14:53.204158",
+    "status": "error",
+    "message": "All scraping methods failed for Telstra",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:14:53.204158",
+    "status": "warning",
+    "message": "No plans retrieved from telstra",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:14:53.214561",
+    "status": "info",
+    "message": "Running optus scraper",
+    "provider": "optus",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:14:53.215915",
+    "status": "info",
+    "message": "Starting Optus scraper",
+    "provider": "optus",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:15:23.557456",
+    "status": "error",
+    "message": "API request failed: HTTPSConnectionPool(host='www.optus.com.au', port=443): Read timed out. (read timeout=30)",
+    "provider": "optus",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:15:24.558633",
+    "status": "error",
+    "message": "Playwright scraping error: Page.goto: net::ERR_HTTP2_PROTOCOL_ERROR at https://www.optus.com.au/broadband/nbn\nCall log:\n  - navigating to \"https://www.optus.com.au/broadband/nbn\", waiting until \"load\"\n",
+    "provider": "optus",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:15:25.526339",
+    "status": "error",
+    "message": "All scraping methods failed for Optus",
+    "provider": "optus",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:15:25.526659",
+    "status": "warning",
+    "message": "No plans retrieved from optus",
+    "provider": "optus",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:15:25.528850",
+    "status": "info",
+    "message": "Running aussie scraper",
+    "provider": "aussie",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:15:25.529849",
+    "status": "info",
+    "message": "Starting Aussie Broadband scraper",
+    "provider": "aussie",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:15:25.773615",
+    "status": "error",
+    "message": "API request failed: 403 Client Error: Forbidden for url: https://www.aussiebroadband.com.au/api/plans",
+    "provider": "aussie",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:15:38.921834",
+    "status": "error",
+    "message": "Playwright scraping error: Page.wait_for_selector: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\".plan-card, .nbn-plan, [data-plan]\") to be visible\n",
+    "provider": "aussie",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:15:40.210033",
+    "status": "error",
+    "message": "All scraping methods failed for Aussie Broadband",
+    "provider": "aussie",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:15:40.213510",
+    "status": "warning",
+    "message": "No plans retrieved from aussie",
+    "provider": "aussie",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:15:40.214742",
+    "status": "info",
+    "message": "Running superloop scraper",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:15:40.215726",
+    "status": "info",
+    "message": "Starting Superloop scraper",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:15:41.145096",
+    "status": "error",
+    "message": "API request failed: 404 Client Error: Not Found for url: https://www.superloop.com/api/plans",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:15:57.445848",
+    "status": "error",
+    "message": "Playwright scraping error: Page.wait_for_selector: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\".plan-card, .broadband-plan, .product-tile\") to be visible\n",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:15:58.738549",
+    "status": "error",
+    "message": "All scraping methods failed for Superloop",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:15:58.739569",
+    "status": "warning",
+    "message": "No plans retrieved from superloop",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-20T12:15:58.741928",
+    "status": "error",
+    "message": "No plans scraped from any provider",
+    "provider": null,
+    "data": {}
+  }
+]

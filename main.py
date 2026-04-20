@@ -1,193 +1,285 @@
 """
-Main pipeline for ISP plan scraping system
-Orchestrates all providers and handles data processing
+Main pipeline for ISP plan scraping system.
+Orchestrates all provider scrapers, validates data, and saves to database and JSON.
 """
 
 import sys
+import os
+
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from typing import List, Dict, Any
-from datetime import datetime
-
-# Import utilities
-from config import (
-    OUTPUT_PLANS_FILE,
-    OUTPUT_LOGS_FILE,
-    DB_CONFIG,
-    PROVIDERS,
-)
-from utils.logger import JSONLogger
-from utils.db import Database
-from utils.save_json import JSONSaver
-from utils.validator import PlanValidator
+from utils.logger import log_info, log_error, log_success, log_warning
+from utils.db import create_connection, create_table_if_not_exists, insert_plans_batch
+from utils.save_json import save_plans_to_json
+from utils.validator import validate_plans, clean_plan_data
+from providers import telstra, optus, aussie, superloop
+from scrapers.renderer import create_renderer_scraper, SiteConfig
+import config
 
 
-def main():
-    """Main execution pipeline"""
-
-    # Initialize logger
-    logger = JSONLogger(OUTPUT_LOGS_FILE)
-    logger.info("Starting ISP plan scraper pipeline")
-
-    # Initialize database
-    db = None
-    try:
-        db = Database(DB_CONFIG)
-        db.create_table()
-        logger.success("Database connection established", details={"database": DB_CONFIG["database"]})
-    except Exception as e:
-        logger.error(f"Failed to connect to database: {e}")
-        print(f"Error: Cannot connect to database. {e}")
-        return
-
-    # Initialize JSON saver
-    saver = JSONSaver(OUTPUT_PLANS_FILE)
-
-    # Collect all plans from providers
-    all_plans = []
-    logger.info("Starting provider scraping")
-
-    # Scrape from each provider
-    provider_results = _scrape_all_providers(logger)
-
-    for provider_name, plans in provider_results.items():
-        if plans:
-            all_plans.extend(plans)
-            logger.success(
-                f"Scraped {len(plans)} plans",
-                provider=provider_name,
-                details={"count": len(plans)},
-            )
-        else:
-            logger.warning(f"No plans scraped", provider=provider_name)
-
-    logger.info(f"Total plans collected: {len(all_plans)}")
-
-    # Validate and clean data
-    logger.info("Starting data validation")
-    valid_plans, invalid_plans = PlanValidator.clean_plans(all_plans)
-
-    if invalid_plans:
-        logger.warning(
-            f"Invalid plans removed: {len(invalid_plans)}",
-            details={"invalid_count": len(invalid_plans)},
-        )
-
-    logger.info(f"Valid plans after validation: {len(valid_plans)}")
-
-    # Save to database
-    logger.info("Saving plans to database")
-    if valid_plans:
-        try:
-            successful, failed = db.insert_plans_batch(valid_plans)
-            logger.success(
-                f"Database insert completed",
-                details={"successful": successful, "failed": failed},
-            )
-        except Exception as e:
-            logger.error(f"Database insert failed: {e}")
-            print(f"Error saving to database: {e}")
-
-    # Save to JSON file
-    logger.info("Saving plans to JSON file")
-    try:
-        saver.save_plans(valid_plans)
-        logger.success(
-            f"Plans saved to JSON",
-            details={"file": OUTPUT_PLANS_FILE, "count": len(valid_plans)},
-        )
-    except Exception as e:
-        logger.error(f"JSON save failed: {e}")
-        print(f"Error saving JSON: {e}")
-
-    # Final statistics
-    stats = {
-        "total_plans_collected": len(all_plans),
-        "valid_plans": len(valid_plans),
-        "invalid_plans": len(invalid_plans),
-        "timestamp": datetime.utcnow().isoformat() + "Z",
-    }
-
-    logger.success(
-        "ISP plan scraper pipeline completed",
-        details=stats,
-    )
-
-    print(f"\n{'='*50}")
-    print(f"SCRAPING PIPELINE COMPLETED")
-    print(f"{'='*50}")
-    print(f"Total plans collected: {stats['total_plans_collected']}")
-    print(f"Valid plans saved: {stats['valid_plans']}")
-    print(f"Invalid plans: {stats['invalid_plans']}")
-    print(f"Database: {DB_CONFIG['database']}")
-    print(f"JSON file: {OUTPUT_PLANS_FILE}")
-    print(f"Logs file: {OUTPUT_LOGS_FILE}")
-    print(f"{'='*50}\n")
-
-    # Close database connection
-    if db:
-        db.close()
-
-
-def _scrape_all_providers(logger: JSONLogger) -> Dict[str, List[Dict[str, Any]]]:
+def run_rendered_scraper() -> List[Dict[str, Any]]:
     """
-    Scrape plans from all providers with error handling
+    Run the rendered HTML scraper for sites that require JavaScript rendering.
+    This is used as a fallback when API scraping fails or for sites without APIs.
+    
+    Returns:
+        List of scraped plans from rendered HTML
+    """
+    log_info("Starting rendered HTML scraper")
+    
+    # Define site configurations for ISP providers
+    sites = [
+        SiteConfig(
+            name="telstra",
+            base_url="https://www.telstra.com.au/internet/home-nbn",
+            selectors={
+                'plan_name': '.plan-name, h2.plan-title, [class*="plan-name"]',
+                'price': '.price, .plan-price, [class*="price"]',
+                'speed': '.speed, .plan-speed, [class*="speed"]'
+            },
+            wait_selector=".plan-card, .plan-container, article",
+            wait_time=2000,
+            max_pages=5
+        ),
+        SiteConfig(
+            name="optus", 
+            base_url="https://www.optus.com.au/internet/nbn-plans",
+            selectors={
+                'plan_name': '.plan-title, h3[class*="plan"]',
+                'price': '.price-amount, [class*="price"]',
+                'speed': '.speed-value, [class*="speed"]'
+            },
+            wait_selector=".plan-card, .product-card",
+            wait_time=2000,
+            max_pages=5
+        )
+    ]
+    
+    scraper = create_renderer_scraper(sites=sites, headless=True)
+    
+    try:
+        results = scraper.scrape_all_sites()
+        
+        # Convert scraped data to plan format
+        plans = []
+        for site_name, pages in results.items():
+            for page in pages:
+                if page.success and page.parsed_data:
+                    plan = {
+                        'provider_id': config.PROVIDERS.get(site_name.lower(), {}).get('id', 0),
+                        'source': 'rendered_html',
+                        'url': page.url,
+                        **page.parsed_data
+                    }
+                    plans.append(plan)
+                    
+        log_success(f"Rendered scraper collected {len(plans)} plans")
+        
+        # Save raw results for debugging
+        scraper.save_results(f"{config.OUTPUT_DIR}/rendered_results.json")
+        
+        return plans
+        
+    except Exception as e:
+        log_error(f"Rendered scraper failed: {str(e)}")
+        return []
+
+
+def run_all_scrapers() -> List[Dict[str, Any]]:
+    """
+    Run all provider scrapers and collect results.
+    Each scraper is wrapped in try/catch to prevent system-wide failures.
+    
+    Returns:
+        Combined list of all scraped plans
+    """
+    all_plans = []
+    
+    # Define scrapers to run
+    scrapers = [
+        ('telstra', telstra.scrape_telstra_plans),
+        ('optus', optus.scrape_optus_plans),
+        ('aussie', aussie.scrape_aussie_plans),
+        ('superloop', superloop.scrape_superloop_plans)
+    ]
+    
+    for provider_name, scraper_func in scrapers:
+        try:
+            log_info(f"Running {provider_name} scraper", provider=provider_name)
+            plans = scraper_func()
+            
+            if plans:
+                log_success(f"Retrieved {len(plans)} plans from {provider_name}", 
+                           provider=provider_name, data={'plan_count': len(plans)})
+                all_plans.extend(plans)
+            else:
+                log_warning(f"No plans retrieved from {provider_name}", provider=provider_name)
+                
+        except Exception as e:
+            log_error(f"Scraper failed for {provider_name}: {str(e)}", 
+                     provider=provider_name, data={'error': str(e)})
+    
+    return all_plans
+
+
+def merge_and_clean_plans(plans: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Merge results from all providers and clean the data.
     
     Args:
-        logger: JSONLogger instance
-        
+        plans: Raw list of plans from all providers
+    
     Returns:
-        Dictionary of provider_name -> list of plans
+        Cleaned list of plans
     """
-    results = {}
+    log_info(f"Merging and cleaning {len(plans)} plans")
+    
+    # Clean each plan
+    cleaned_plans = []
+    for plan in plans:
+        try:
+            cleaned = clean_plan_data(plan)
+            cleaned_plans.append(cleaned)
+        except Exception as e:
+            log_warning(f"Failed to clean plan: {str(e)}", data={'plan': plan})
+    
+    log_success(f"Cleaned {len(cleaned_plans)} plans")
+    return cleaned_plans
 
-    # Scrape Aussie (API-first)
-    logger.info("Scraping Aussie Broadband...")
+
+def validate_all_plans(plans: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Validate all plans and remove invalid records.
+    
+    Args:
+        plans: List of plans to validate
+    
+    Returns:
+        List of valid plans only
+    """
+    log_info(f"Validating {len(plans)} plans")
+    
+    valid_plans, invalid_plans = validate_plans(plans)
+    
+    if invalid_plans:
+        log_warning(f"Found {len(invalid_plans)} invalid plans", 
+                   data={'invalid_count': len(invalid_plans)})
+        for invalid in invalid_plans:
+            log_warning(f"Invalid plan: {invalid.get('plan_name', 'Unknown')} - {invalid.get('validation_error', 'Unknown error')}",
+                       data={'plan': invalid})
+    
+    log_success(f"Validation complete: {len(valid_plans)} valid, {len(invalid_plans)} invalid")
+    return valid_plans
+
+
+def save_to_database(plans: List[Dict[str, Any]]):
+    """
+    Save plans to MySQL database.
+    
+    Args:
+        plans: List of validated plans
+    """
+    log_info("Saving plans to database")
+    
+    connection = create_connection()
+    if not connection:
+        log_error("Failed to connect to database")
+        return False
+    
     try:
-        from providers.aussie import scrape_aussie
-
-        results["aussie"] = scrape_aussie()
+        # Create table if it doesn't exist
+        create_table_if_not_exists(connection)
+        
+        # Insert plans in batch
+        insert_plans_batch(connection, plans)
+        
+        log_success(f"Successfully saved {len(plans)} plans to database")
+        return True
+        
     except Exception as e:
-        logger.error(f"Aussie scraper failed: {e}", provider="aussie")
-        results["aussie"] = []
+        log_error(f"Database save failed: {str(e)}")
+        return False
+    finally:
+        if connection.is_connected():
+            connection.close()
 
-    # Scrape Telstra (Playwright)
-    logger.info("Scraping Telstra...")
+
+def save_to_json(plans: List[Dict[str, Any]]):
+    """
+    Save plans to JSON file.
+    
+    Args:
+        plans: List of validated plans
+    """
+    log_info("Saving plans to JSON file")
+    
+    success = save_plans_to_json(plans)
+    
+    if success:
+        log_success(f"Successfully saved {len(plans)} plans to JSON")
+    else:
+        log_error("Failed to save plans to JSON")
+    
+    return success
+
+
+def run_pipeline():
+    """
+    Main pipeline execution function.
+    Orchestrates the entire scraping workflow.
+    """
+    log_info("=" * 50)
+    log_info("Starting ISP Plan Scraping Pipeline")
+    log_info("=" * 50)
+    
     try:
-        from providers.telstra import scrape_telstra_sync
-
-        results["telstra"] = scrape_telstra_sync()
+        # Step 1: Run all scrapers
+        raw_plans = run_all_scrapers()
+        
+        if not raw_plans:
+            log_warning("No plans from API scrapers, attempting rendered HTML scraping")
+            raw_plans = run_rendered_scraper()
+        
+        if not raw_plans:
+            log_error("No plans scraped from any source")
+            return False
+        
+        log_success(f"Total raw plans collected: {len(raw_plans)}")
+        
+        # Step 2: Merge and clean data
+        cleaned_plans = merge_and_clean_plans(raw_plans)
+        
+        # Step 3: Validate plans
+        valid_plans = validate_all_plans(cleaned_plans)
+        
+        if not valid_plans:
+            log_error("No valid plans after validation")
+            return False
+        
+        # Step 4: Save to database
+        db_success = save_to_database(valid_plans)
+        
+        # Step 5: Save to JSON
+        json_success = save_to_json(valid_plans)
+        
+        # Final summary
+        log_info("=" * 50)
+        log_info("Pipeline Execution Summary")
+        log_info("=" * 50)
+        log_success(f"Total plans processed: {len(valid_plans)}")
+        log_success(f"Database save: {'Success' if db_success else 'Failed'}")
+        log_success(f"JSON save: {'Success' if json_success else 'Failed'}")
+        log_info("=" * 50)
+        
+        return db_success and json_success
+        
     except Exception as e:
-        logger.error(f"Telstra scraper failed: {e}", provider="telstra")
-        results["telstra"] = []
-
-    # Scrape Optus (Playwright)
-    logger.info("Scraping Optus...")
-    try:
-        from providers.optus import scrape_optus_sync
-
-        results["optus"] = scrape_optus_sync()
-    except Exception as e:
-        logger.error(f"Optus scraper failed: {e}", provider="optus")
-        results["optus"] = []
-
-    # Scrape Superloop (Playwright)
-    logger.info("Scraping Superloop...")
-    try:
-        from providers.superloop import scrape_superloop_sync
-
-        results["superloop"] = scrape_superloop_sync()
-    except Exception as e:
-        logger.error(f"Superloop scraper failed: {e}", provider="superloop")
-        results["superloop"] = []
-
-    return results
+        log_error(f"Pipeline failed with critical error: {str(e)}")
+        return False
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        print("\n\nScraper interrupted by user")
-        sys.exit(1)
-    except Exception as e:
-        print(f"\n\nUnexpected error: {e}")
-        sys.exit(1)
+    success = run_pipeline()
+    sys.exit(0 if success else 1)

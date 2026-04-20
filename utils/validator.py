@@ -1,196 +1,204 @@
 """
-Data validator for ISP plans
-Validates required fields and data format
+Validator utility module.
+Validates plan data and removes invalid records.
 """
 
 from typing import List, Dict, Any, Optional
 import re
 
 
-class PlanValidator:
-    """Validates ISP plan data"""
+def validate_plan(plan: Dict[str, Any]) -> tuple[bool, Optional[str]]:
+    """
+    Validate a single plan record.
+    
+    Required fields:
+    - plan_name: Must exist and be non-empty
+    - price: Must exist and be a valid number
+    - speed: Must exist and be a valid number
+    
+    Args:
+        plan: Plan dictionary to validate
+    
+    Returns:
+        Tuple of (is_valid, error_message)
+    """
+    # Check plan_name exists and is non-empty
+    if not plan.get('plan_name'):
+        return False, "Missing or empty plan_name"
+    
+    if not isinstance(plan.get('plan_name'), str) or not plan['plan_name'].strip():
+        return False, "plan_name must be a non-empty string"
+    
+    # Check price exists and is valid
+    price = plan.get('price') or plan.get('monthly_price')
+    if price is None:
+        return False, "Missing price or monthly_price"
+    
+    try:
+        price_float = float(price)
+        if price_float < 0:
+            return False, "Price cannot be negative"
+    except (ValueError, TypeError):
+        return False, f"Invalid price format: {price}"
+    
+    # Check speed exists and is valid
+    speed = plan.get('speed') or plan.get('speed_label') or plan.get('download_speed')
+    if speed is None:
+        return False, "Missing speed, speed_label, or download_speed"
+    
+    try:
+        speed_int = int(speed)
+        if speed_int < 0:
+            return False, "Speed cannot be negative"
+    except (ValueError, TypeError):
+        return False, f"Invalid speed format: {speed}"
+    
+    # All validations passed
+    return True, None
 
-    # Required fields for a valid plan
-    REQUIRED_FIELDS = ["plan_name", "price", "speed", "provider_id"]
 
-    # Optional fields
-    OPTIONAL_FIELDS = [
-        "promo_price",
-        "promo_period",
-        "contract",
-        "upload_speed",
-        "source_url",
-        "network_type",
-    ]
+def validate_plans(plans: List[Dict[str, Any]]) -> tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    """
+    Validate a list of plans and separate valid from invalid.
+    
+    Args:
+        plans: List of plan dictionaries
+    
+    Returns:
+        Tuple of (valid_plans, invalid_plans)
+    """
+    valid_plans = []
+    invalid_plans = []
+    
+    for plan in plans:
+        is_valid, error = validate_plan(plan)
+        if is_valid:
+            valid_plans.append(plan)
+        else:
+            invalid_plan = plan.copy()
+            invalid_plan['validation_error'] = error
+            invalid_plans.append(invalid_plan)
+    
+    return valid_plans, invalid_plans
 
-    @staticmethod
-    def validate_plan(plan: Dict[str, Any]) -> tuple[bool, Optional[str]]:
-        """
-        Validate a single plan
-        
-        Args:
-            plan: Plan data dictionary
-            
-        Returns:
-            Tuple of (is_valid, error_message)
-        """
-        # Check required fields
-        for field in PlanValidator.REQUIRED_FIELDS:
-            if field not in plan or plan[field] is None:
-                return False, f"Missing required field: {field}"
 
-        # Validate plan_name
-        if not isinstance(plan["plan_name"], str) or len(plan["plan_name"].strip()) == 0:
-            return False, "plan_name must be a non-empty string"
+def clean_plan_data(plan: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Clean and normalize plan data.
+    
+    - Strip whitespace from strings
+    - Convert numeric strings to proper types
+    - Normalize price formats
+    
+    Args:
+        plan: Plan dictionary to clean
+    
+    Returns:
+        Cleaned plan dictionary
+    """
+    cleaned = plan.copy()
+    
+    # Clean string fields
+    string_fields = ['plan_name', 'network_type', 'promo_period', 'contract', 'source_url']
+    for field in string_fields:
+        if field in cleaned and isinstance(cleaned[field], str):
+            cleaned[field] = cleaned[field].strip()
+    
+    # Clean and normalize price
+    price_fields = ['price', 'monthly_price', 'promo_price']
+    for field in price_fields:
+        if field in cleaned:
+            cleaned[field] = normalize_price(cleaned[field])
+    
+    # Clean and normalize speed
+    speed_fields = ['speed', 'speed_label', 'download_speed', 'upload_speed']
+    for field in speed_fields:
+        if field in cleaned and cleaned[field] is not None:
+            cleaned[field] = normalize_speed(cleaned[field])
+    
+    return cleaned
 
-        # Validate price
-        try:
-            price = float(plan["price"])
-            if price < 0:
-                return False, "price cannot be negative"
-        except (ValueError, TypeError):
-            return False, "price must be a valid number"
 
-        # Validate speed
-        try:
-            speed = int(plan["speed"])
-            if speed <= 0:
-                return False, "speed must be greater than 0"
-        except (ValueError, TypeError):
-            return False, "speed must be a valid integer"
-
-        # Validate provider_id
-        try:
-            provider_id = int(plan["provider_id"])
-            if provider_id <= 0:
-                return False, "provider_id must be greater than 0"
-        except (ValueError, TypeError):
-            return False, "provider_id must be a valid integer"
-
-        # Validate optional fields if present
-        if "upload_speed" in plan and plan["upload_speed"] is not None:
-            try:
-                upload_speed = int(plan["upload_speed"])
-                if upload_speed < 0:
-                    return False, "upload_speed cannot be negative"
-            except (ValueError, TypeError):
-                return False, "upload_speed must be a valid integer"
-
-        if "promo_price" in plan and plan["promo_price"] is not None:
-            try:
-                promo_price = float(plan["promo_price"])
-                if promo_price < 0:
-                    return False, "promo_price cannot be negative"
-            except (ValueError, TypeError):
-                return False, "promo_price must be a valid number"
-
-        return True, None
-
-    @staticmethod
-    def clean_plans(plans: List[Dict[str, Any]]) -> tuple[List[Dict[str, Any]], List[Dict[str, str]]]:
-        """
-        Clean and validate plans
-        
-        Args:
-            plans: List of plan dictionaries
-            
-        Returns:
-            Tuple of (valid_plans, invalid_plans_with_reasons)
-        """
-        valid_plans = []
-        invalid_plans = []
-
-        for plan in plans:
-            is_valid, error_msg = PlanValidator.validate_plan(plan)
-            if is_valid:
-                # Normalize data types
-                cleaned_plan = PlanValidator._normalize_plan(plan)
-                valid_plans.append(cleaned_plan)
-            else:
-                invalid_plans.append({"plan": plan, "reason": error_msg})
-
-        return valid_plans, invalid_plans
-
-    @staticmethod
-    def _normalize_plan(plan: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Normalize plan data types
-        
-        Args:
-            plan: Plan dictionary
-            
-        Returns:
-            Normalized plan dictionary
-        """
-        normalized = dict(plan)
-
-        # Ensure correct types
-        normalized["provider_id"] = int(normalized["provider_id"])
-        normalized["speed"] = int(normalized["speed"])
-        normalized["price"] = float(normalized["price"])
-
-        if "upload_speed" in normalized and normalized["upload_speed"] is not None:
-            normalized["upload_speed"] = int(normalized["upload_speed"])
-
-        if "promo_price" in normalized and normalized["promo_price"] is not None:
-            normalized["promo_price"] = float(normalized["promo_price"])
-
-        # Ensure plan_name is stripped
-        normalized["plan_name"] = normalized["plan_name"].strip()
-
-        # Remove None values for optional fields
-        for field in PlanValidator.OPTIONAL_FIELDS:
-            if field in normalized and normalized[field] is None:
-                del normalized[field]
-
-        return normalized
-
-    @staticmethod
-    def extract_speed_from_name(plan_name: str) -> Optional[int]:
-        """
-        Extract speed from plan name using regex
-        
-        Args:
-            plan_name: Plan name string
-            
-        Returns:
-            Speed in Mbps or None
-        """
-        # Match patterns like "100Mbps", "100 Mbps", "100/40 Mbps"
-        patterns = [
-            r'(\d+)\s*(?:Mbps|mbps)',  # 100Mbps or 100 Mbps
-            r'(\d+)\s*/\s*\d+',  # 100/40
-        ]
-
-        for pattern in patterns:
-            match = re.search(pattern, plan_name, re.IGNORECASE)
-            if match:
-                try:
-                    return int(match.group(1))
-                except (ValueError, IndexError):
-                    continue
-
+def normalize_price(price_value) -> Optional[float]:
+    """
+    Normalize price value to float.
+    Handles formats like: "$89", "$89/month", "89.00", etc.
+    
+    Args:
+        price_value: Price value (string or number)
+    
+    Returns:
+        Float value or None if invalid
+    """
+    if price_value is None:
         return None
-
-    @staticmethod
-    def normalize_price(price_str: str) -> Optional[float]:
-        """
-        Normalize price strings like "$89/month"
-        
-        Args:
-            price_str: Price string
-            
-        Returns:
-            Float price or None
-        """
-        if not isinstance(price_str, str):
-            return None
-
-        # Remove common words and symbols
-        price_str = price_str.lower()
-        price_str = re.sub(r'[^0-9.]', '', price_str)
-
+    
+    if isinstance(price_value, (int, float)):
+        return float(price_value)
+    
+    if isinstance(price_value, str):
+        # Remove currency symbols and text
+        cleaned = re.sub(r'[^\d.]', '', price_value)
         try:
-            return float(price_str)
+            return float(cleaned) if cleaned else None
         except ValueError:
             return None
+    
+    return None
+
+
+def normalize_speed(speed_value) -> Optional[int]:
+    """
+    Normalize speed value to integer.
+    Handles formats like: "100", "100 Mbps", "100Mbps", etc.
+    
+    Args:
+        speed_value: Speed value (string or number)
+    
+    Returns:
+        Integer value or None if invalid
+    """
+    if speed_value is None:
+        return None
+    
+    if isinstance(speed_value, int):
+        return speed_value
+    
+    if isinstance(speed_value, float):
+        return int(speed_value)
+    
+    if isinstance(speed_value, str):
+        # Extract numeric part
+        match = re.search(r'(\d+)', speed_value)
+        if match:
+            return int(match.group(1))
+        return None
+    
+    return None
+
+
+def extract_speed_from_plan_name(plan_name: str) -> Optional[int]:
+    """
+    Extract speed value from plan name using regex.
+    Useful when speed is embedded in the plan name.
+    
+    Examples:
+        "Premium 100" -> 100
+        "Fast 50 Mbps" -> 50
+        "Ultra 250Mbps" -> 250
+    
+    Args:
+        plan_name: Plan name string
+    
+    Returns:
+        Extracted speed as integer or None
+    """
+    if not plan_name or not isinstance(plan_name, str):
+        return None
+    
+    # Look for patterns like "100", "100 Mbps", "100Mbps"
+    match = re.search(r'(\d+)\s*(?:mbps|mb)?', plan_name, re.IGNORECASE)
+    if match:
+        return int(match.group(1))
+    
+    return None

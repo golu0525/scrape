@@ -1,249 +1,253 @@
 """
-Aussie Broadband ISP plans scraper
-Aussie has a public API - use this for API-first approach
+Aussie Broadband ISP plan scraper.
+Uses API-first approach, falls back to Playwright if needed.
 """
 
-from typing import List, Dict, Any, Optional
 import requests
-import re
-from config import REQUEST_HEADERS, RETRY_CONFIG, PROVIDERS
-import time
+from typing import List, Dict, Any
+from playwright.sync_api import sync_playwright
+import config
+from utils.logger import log_info, log_error, log_success
+from utils.stealth import create_stealth_browser, create_stealth_page
 
 
-def scrape_aussie() -> List[Dict[str, Any]]:
+# Aussie Broadband API endpoint (example - update with actual API if available)
+AUSSIE_API_URL = "https://www.aussiebroadband.com.au/api/plans"
+AUSSIE_WEBSITE_URL = "https://www.aussiebroadband.com.au/broadband/nbn/"
+
+
+def scrape_aussie_plans() -> List[Dict[str, Any]]:
     """
-    Scrape Aussie Broadband plans using their API
+    Scrape Aussie Broadband ISP plans.
+    First attempts API, falls back to Playwright scraping.
     
     Returns:
         List of plan dictionaries
     """
-    provider_config = PROVIDERS["aussie"]
+    log_info("Starting Aussie Broadband scraper", provider="aussie")
+    
+    # Try API first
+    try:
+        plans = scrape_via_api()
+        if plans:
+            log_success(f"Successfully scraped {len(plans)} plans via API", provider="aussie")
+            return plans
+    except Exception as e:
+        log_info("API scraping failed, falling back to Playwright", provider="aussie", 
+                data={'error': str(e)})
+    
+    # Fallback to Playwright
+    try:
+        plans = scrape_via_playwright()
+        if plans:
+            log_success(f"Successfully scraped {len(plans)} plans via Playwright", provider="aussie")
+            return plans
+    except Exception as e:
+        log_error(f"Playwright scraping failed: {str(e)}", provider="aussie")
+    
+    log_error("All scraping methods failed for Aussie Broadband", provider="aussie")
+    return []
+
+
+def scrape_via_api() -> List[Dict[str, Any]]:
+    """
+    Scrape Aussie Broadband plans using their API.
+    
+    Returns:
+        List of plan dictionaries
+    """
     plans = []
-
-    # Aussie Broadband API endpoints
-    # Note: These are example endpoints - verify with actual API documentation
-    api_url = "https://api.aussiebroadband.com.au/plans"
-
-    retries = 0
-    while retries < RETRY_CONFIG["max_retries"]:
-        try:
-            response = requests.get(api_url, headers=REQUEST_HEADERS, timeout=10)
-            response.raise_for_status()
-
-            data = response.json()
-
-            # Parse plans from API response
-            if isinstance(data, list):
-                api_plans = data
-            elif isinstance(data, dict) and "plans" in data:
-                api_plans = data["plans"]
-            else:
-                api_plans = []
-
-            for api_plan in api_plans:
-                try:
-                    plan = _parse_aussie_plan(api_plan, provider_config)
-                    if plan:
-                        plans.append(plan)
-                except Exception as e:
-                    print(f"Error parsing Aussie plan: {e}")
-                    continue
-
-            break  # Success, exit retry loop
-
-        except requests.exceptions.RequestException as e:
-            print(f"Error scraping Aussie API (attempt {retries + 1}): {e}")
-            retries += 1
-            if retries < RETRY_CONFIG["max_retries"]:
-                time.sleep(RETRY_CONFIG["retry_delay"])
-        except Exception as e:
-            print(f"Unexpected error scraping Aussie: {e}")
-            break
-
+    
+    try:
+        response = requests.get(AUSSIE_API_URL, timeout=30)
+        response.raise_for_status()
+        
+        data = response.json()
+        
+        # Parse API response (adjust based on actual API structure)
+        if isinstance(data, dict) and 'plans' in data:
+            for plan_data in data['plans']:
+                plan = parse_aussie_api_plan(plan_data)
+                if plan:
+                    plans.append(plan)
+        
+    except requests.exceptions.RequestException as e:
+        log_error(f"API request failed: {str(e)}", provider="aussie")
+    except Exception as e:
+        log_error(f"API parsing failed: {str(e)}", provider="aussie")
+    
     return plans
 
 
-def _parse_aussie_plan(api_plan: Dict[str, Any], provider_config: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+def parse_aussie_api_plan(plan_data: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Parse a single plan from Aussie API response
+    Parse an Aussie Broadband API plan response into standardized format.
     
     Args:
-        api_plan: Plan data from API
-        provider_config: Provider configuration
-        
+        plan_data: Raw plan data from API
+    
     Returns:
-        Standardized plan dictionary or None
+        Standardized plan dictionary
     """
     try:
-        plan_name = api_plan.get("name", "")
-        speed = _parse_speed(api_plan.get("speed", 0))
-        price = _parse_price(api_plan.get("price", 0))
-
-        if not plan_name or speed is None or price is None:
-            return None
-
-        plan = {
-            "provider_id": provider_config["id"],
-            "plan_name": plan_name,
-            "speed": speed,
-            "price": price,
-            "network_type": api_plan.get("network_type", "FTTP"),
-            "source_url": provider_config["web_url"],
-            "contract": api_plan.get("contract_term", ""),
-            "upload_speed": _parse_speed(api_plan.get("upload_speed")),
-            "promo_price": _parse_price(api_plan.get("promotional_price")),
-            "promo_period": api_plan.get("promotional_period", ""),
+        return {
+            'provider_id': config.PROVIDERS['aussie']['id'],
+            'plan_name': plan_data.get('name', ''),
+            'network_type': plan_data.get('networkType', 'NBN'),
+            'speed': int(plan_data.get('speed', 0)),
+            'download_speed': int(plan_data.get('downloadSpeed', plan_data.get('speed', 0))),
+            'upload_speed': int(plan_data.get('uploadSpeed', 0)),
+            'price': float(plan_data.get('monthlyPrice', 0)),
+            'promo_price': float(plan_data.get('promoPrice', 0)) if plan_data.get('promoPrice') else None,
+            'promo_period': plan_data.get('promoPeriod', ''),
+            'contract': plan_data.get('contractTerm', 'No Contract'),
+            'source_url': AUSSIE_WEBSITE_URL
         }
-
-        # Remove None and empty optional fields
-        plan = {k: v for k, v in plan.items() if v not in (None, "")}
-
-        return plan
-
     except Exception as e:
-        print(f"Error in _parse_aussie_plan: {e}")
+        log_error(f"Failed to parse Aussie Broadband API plan: {str(e)}", provider="aussie")
         return None
 
 
-def _parse_speed(speed_value: Any) -> Optional[int]:
+def scrape_via_playwright() -> List[Dict[str, Any]]:
     """
-    Parse speed value from API response
-    
-    Args:
-        speed_value: Speed value (int, string, or None)
-        
-    Returns:
-        Speed in Mbps or None
-    """
-    if speed_value is None:
-        return None
-
-    if isinstance(speed_value, int):
-        return speed_value if speed_value > 0 else None
-
-    if isinstance(speed_value, str):
-        match = re.search(r'(\d+)', speed_value)
-        if match:
-            try:
-                return int(match.group(1))
-            except ValueError:
-                pass
-
-    return None
-
-
-def _parse_price(price_value: Any) -> Optional[float]:
-    """
-    Parse price value from API response
-    
-    Args:
-        price_value: Price value (float, int, or string)
-        
-    Returns:
-        Price as float or None
-    """
-    if price_value is None:
-        return None
-
-    if isinstance(price_value, (int, float)):
-        price = float(price_value)
-        return price if price >= 0 else None
-
-    if isinstance(price_value, str):
-        # Remove currency symbols and extract number
-        price_str = re.sub(r'[^0-9.]', '', price_value)
-        try:
-            return float(price_str)
-        except ValueError:
-            pass
-
-    return None
-
-
-def scrape_aussie_fallback() -> List[Dict[str, Any]]:
-    """
-    Fallback scraper using Playwright if API is unavailable
+    Scrape Aussie Broadband plans using Playwright (for dynamic websites).
     
     Returns:
         List of plan dictionaries
     """
-    import asyncio
-
-    try:
-        from playwright.async_api import async_playwright
-    except ImportError:
-        print("Playwright not installed. Cannot use fallback scraper.")
-        return []
-
-    provider_config = PROVIDERS["aussie"]
     plans = []
-
-    async def _scrape():
-        from config import PLAYWRIGHT_CONFIG
-
-        async with async_playwright() as p:
-            browser = None
-            try:
-                browser = await p.chromium.launch(headless=PLAYWRIGHT_CONFIG["headless"])
-                context = await browser.new_context()
-                page = await context.new_page()
-
-                await page.goto(provider_config["web_url"], timeout=PLAYWRIGHT_CONFIG["timeout"])
-                await page.wait_for_selector('[data-testid*="plan"]', timeout=PLAYWRIGHT_CONFIG["wait_selector_timeout"])
-                await asyncio.sleep(1)
-
-                # Extract plans (implement similar to other providers)
-                plan_elements = await page.query_selector_all('[class*="plan"]')
-
-                for element in plan_elements:
-                    try:
-                        text = await element.text_content()
-                        speed = _extract_speed_from_text(text)
-                        price = _extract_price_from_text(text)
-
-                        if speed and price:
-                            plan = {
-                                "provider_id": provider_config["id"],
-                                "plan_name": text.split("\n")[0].strip(),
-                                "speed": speed,
-                                "price": price,
-                                "network_type": "FTTP",
-                                "source_url": provider_config["web_url"],
-                            }
-                            plans.append(plan)
-                    except Exception as e:
-                        print(f"Error extracting Aussie plan: {e}")
-
-                await context.close()
-
-            except Exception as e:
-                print(f"Error in fallback scraper: {e}")
-            finally:
-                if browser:
-                    await browser.close()
-
-        return plans
-
-    return asyncio.run(_scrape())
-
-
-def _extract_speed_from_text(text: str) -> Optional[int]:
-    """Extract speed from text"""
-    match = re.search(r'(\d+)\s*(?:Mbps|mbps)', text)
-    if match:
+    
+    with sync_playwright() as p:
+        browser = create_stealth_browser(p)
+        page = create_stealth_page(browser)
+        
         try:
-            return int(match.group(1))
-        except ValueError:
-            pass
-    return None
+            # Navigate to Aussie Broadband NBN plans page
+            page.goto(AUSSIE_WEBSITE_URL, timeout=config.PLAYWRIGHT_TIMEOUT, wait_until="domcontentloaded")
+            
+            # Wait for page to load
+            page.wait_for_timeout(config.PLAYWRIGHT_WAIT_TIME)
+            
+            # Wait for plan cards to appear
+            page.wait_for_selector('.plan-card, .nbn-plan, [data-plan]', 
+                                 timeout=10000, state='visible')
+            
+            # Find all plan cards
+            plan_cards = page.query_selector_all('.plan-card, .nbn-plan, [data-plan]')
+            
+            for card in plan_cards:
+                try:
+                    plan = extract_plan_from_card(page, card)
+                    if plan:
+                        plans.append(plan)
+                except Exception as e:
+                    log_error(f"Failed to extract plan from card: {str(e)}", provider="aussie")
+            
+        except Exception as e:
+            log_error(f"Playwright scraping error: {str(e)}", provider="aussie")
+        finally:
+            browser.close()
+    
+    return plans
 
 
-def _extract_price_from_text(text: str) -> Optional[float]:
-    """Extract price from text"""
-    match = re.search(r'\$\s*(\d+(?:\.\d{2})?)', text)
-    if match:
-        try:
-            return float(match.group(1))
-        except ValueError:
-            pass
-    return None
+def extract_plan_from_card(page, card) -> Dict[str, Any]:
+    """
+    Extract plan data from a single plan card element.
+    
+    Args:
+        page: Playwright page object
+        card: Playwright element handle for plan card
+    
+    Returns:
+        Standardized plan dictionary
+    """
+    try:
+        # Extract plan name
+        plan_name_elem = card.query_selector('.plan-name, h3, .plan-title, .title')
+        plan_name = plan_name_elem.inner_text().strip() if plan_name_elem else ''
+        
+        # Extract speed
+        speed_elem = card.query_selector('.plan-speed, .speed, .typical-speed')
+        speed_text = speed_elem.inner_text().strip() if speed_elem else '0'
+        speed = extract_speed_from_text(speed_text)
+        
+        # Extract price
+        price_elem = card.query_selector('.plan-price, .price, .monthly-cost')
+        price_text = price_elem.inner_text().strip() if price_elem else '0'
+        price = extract_price_from_text(price_text)
+        
+        # Extract network type
+        network_elem = card.query_selector('.network-type, .technology, .connection-type')
+        network_type = network_elem.inner_text().strip() if network_elem else 'NBN'
+        
+        # Extract upload speed
+        upload_elem = card.query_selector('.upload-speed, .typical-upload')
+        upload_text = upload_elem.inner_text().strip() if upload_elem else '0'
+        upload_speed = extract_speed_from_text(upload_text)
+        
+        # Extract contract term
+        contract_elem = card.query_selector('.contract-term, .no-lock')
+        contract = contract_elem.inner_text().strip() if contract_elem else 'No Contract'
+        
+        # Check for promo
+        promo_elem = card.query_selector('.promo, .special, .offer')
+        promo_price = None
+        promo_period = None
+        if promo_elem:
+            promo_text = promo_elem.inner_text().strip()
+            promo_price = extract_price_from_text(promo_text)
+            # Try to extract promo period
+            import re
+            period_match = re.search(r'(\d+)\s*(months?|mths?)', promo_text, re.IGNORECASE)
+            if period_match:
+                promo_period = f"{period_match.group(1)} months"
+        
+        return {
+            'provider_id': config.PROVIDERS['aussie']['id'],
+            'plan_name': plan_name,
+            'network_type': network_type,
+            'speed': speed,
+            'download_speed': speed,
+            'upload_speed': upload_speed,
+            'price': price,
+            'promo_price': promo_price,
+            'promo_period': promo_period,
+            'contract': contract,
+            'source_url': AUSSIE_WEBSITE_URL
+        }
+        
+    except Exception as e:
+        log_error(f"Error extracting plan from card: {str(e)}", provider="aussie")
+        return None
+
+
+def extract_speed_from_text(text: str) -> int:
+    """
+    Extract speed value from text.
+    
+    Args:
+        text: Text containing speed information
+    
+    Returns:
+        Speed as integer
+    """
+    import re
+    match = re.search(r'(\d+)', text)
+    return int(match.group(1)) if match else 0
+
+
+def extract_price_from_text(text: str) -> float:
+    """
+    Extract price value from text.
+    
+    Args:
+        text: Text containing price information
+    
+    Returns:
+        Price as float
+    """
+    import re
+    # Remove currency symbols and extract number
+    match = re.search(r'\$?([\d.]+)', text)
+    return float(match.group(1)) if match else 0.0

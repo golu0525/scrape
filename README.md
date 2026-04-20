@@ -1,110 +1,55 @@
 # ISP Plan Scraping System
 
-A production-ready Python scraping system for extracting ISP plan data from multiple Australian broadband providers.
+A production-ready ISP plan scraping system that extracts plan data from multiple Australian internet service providers.
 
 ## Features
 
-- **API-first approach**: Uses APIs when available (Aussie Broadband)
-- **Dynamic content handling**: Uses Playwright for JavaScript-heavy sites (Telstra, Optus, Superloop)
-- **Robust data validation**: Validates all plan data before persistence
-- **Multi-target storage**: Saves data to MySQL database and JSON files
-- **JSON logging**: All events logged to JSON (not database)
-- **Retry logic**: Automatic retries for failed scrapes
-- **Error handling**: Provider failures don't crash the entire system
-
-## Supported Providers
-
-1. **Telstra** - Playwright scraper
-2. **Optus** - Playwright scraper (with retry logic)
-3. **Aussie Broadband** - API-based scraper
-4. **Superloop** - Playwright scraper
-
-## Project Structure
-
-```
-/scrape
-  /providers/
-    telstra.py         # Telstra scraper
-    optus.py           # Optus scraper
-    aussie.py          # Aussie Broadband scraper (API)
-    superloop.py       # Superloop scraper
-  /utils/
-    db.py              # MySQL database operations
-    logger.py          # JSON logging
-    save_json.py       # JSON file output
-    validator.py       # Data validation & cleaning
-  /output/
-    plans.json         # Output plans file
-    logs.json          # Output logs file
-  config.py            # Configuration
-  main.py              # Main pipeline
-  requirements.txt     # Python dependencies
-```
+- **Multi-Provider Support**: Scrapes from Telstra, Optus, Aussie Broadband, and Superloop
+- **API-First Approach**: Prioritizes API access when available, falls back to Playwright for dynamic websites
+- **Dual Storage**: Saves data to both MySQL database and JSON files
+- **JSON Logging**: All logs stored in JSON format (not database)
+- **Data Validation**: Comprehensive validation ensures data quality
+- **Error Handling**: Robust error handling prevents system-wide failures
+- **Modular Architecture**: Clean, reusable code structure
 
 ## Installation
 
-### Prerequisites
+### 1. Install Python Dependencies
 
-- Python 3.11+
-- MySQL 8.0+
-
-### Setup
-
-1. Install dependencies:
 ```bash
+cd scrape
 pip install -r requirements.txt
 ```
 
-2. Install Playwright browsers:
+### 2. Install Playwright Browsers
+
 ```bash
-playwright install chromium
+playwright install
 ```
 
-3. Configure database connection:
-```bash
-# Create .env file
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=your_password
-DB_NAME=isp_plans
-DB_PORT=3306
+### 3. Configure Database
+
+Update the database configuration in `config.py`:
+
+```python
+DB_CONFIG = {
+    'host': 'localhost',
+    'user': 'root',
+    'password': 'your_password',
+    'database': 'isp_plans',
+    'port': 3306
+}
 ```
 
-Or set environment variables directly.
+### 4. Create Database
 
-## Configuration
-
-Edit `config.py` to customize:
-
-- Database connection details
-- Output file paths
-- Provider configurations
-- Playwright timeouts
-- Retry settings
-- Request headers
-
-## Database Schema
-
-The system creates a `plans_current` table with:
-
-- `provider_id` - Provider identifier
-- `plan_name` - Plan name
-- `network_type` - Network type (FTTP, FTTN, etc.)
-- `speed_label` - Speed category
-- `download_speed` - Download speed (Mbps)
-- `upload_speed` - Upload speed (Mbps)
-- `monthly_price` - Monthly price (AUD)
-- `promo_price` - Promotional price (if available)
-- `promo_period` - Promotional period duration
-- `contract_term` - Contract length
-- `source_url` - Source website URL
-- `last_checked` - Last check timestamp
-
-Unique constraint: `(provider_id, plan_name, speed_label)`
+```sql
+CREATE DATABASE isp_plans;
+```
 
 ## Usage
 
-### Run the full pipeline:
+### Run the Complete Pipeline
 
 ```bash
 python main.py
@@ -115,184 +60,115 @@ This will:
 2. Validate and clean data
 3. Save to MySQL database
 4. Save to JSON file
-5. Log all events to JSON
+5. Log all operations
 
-### Output Files
+### Run Individual Provider Scrapers
 
-- **plans.json**: Contains all scraped and validated plans
-```json
-{
-  "total_plans": 150,
-  "plans": [
-    {
-      "provider_id": 1,
-      "plan_name": "NBN 100",
-      "speed": 100,
-      "price": 89.99,
-      "network_type": "FTTP",
-      "source_url": "https://...",
-      ...
-    }
-  ]
-}
+```python
+from providers import telstra
+
+plans = telstra.scrape_telstra_plans()
 ```
 
-- **logs.json**: Contains all pipeline events
-```json
-[
-  {
-    "timestamp": "2024-01-15T10:30:00Z",
-    "status": "success",
-    "message": "Scraped 45 plans",
-    "provider": "aussie",
-    "details": { "count": 45 }
-  }
-]
+## Project Structure
+
+```
+scrape/
+├── providers/
+│   ├── telstra.py       # Telstra scraper
+│   ├── optus.py         # Optus scraper
+│   ├── aussie.py        # Aussie Broadband scraper
+│   └── superloop.py     # Superloop scraper
+├── utils/
+│   ├── db.py            # Database operations
+│   ├── logger.py        # JSON logging
+│   ├── save_json.py     # JSON file operations
+│   └── validator.py     # Data validation
+├── output/
+│   ├── plans.json       # Scraped plans output
+│   └── logs.json        # Log file
+├── config.py            # Configuration settings
+├── main.py              # Main pipeline
+└── requirements.txt     # Python dependencies
 ```
 
-## Data Validation
+## Database Schema
 
-The validator ensures:
+### Table: `plans_current`
 
-- `plan_name` is non-empty string
-- `price` is valid number ≥ 0
-- `speed` is positive integer
-- `provider_id` is positive integer
-- Optional fields have correct types
-- Removes invalid records before persistence
+| Column | Type | Description |
+|--------|------|-------------|
+| provider_id | INT | Provider identifier |
+| plan_name | VARCHAR(255) | Name of the plan |
+| network_type | VARCHAR(50) | Network technology (NBN, FTTP, etc.) |
+| speed_label | INT | Speed tier label |
+| download_speed | INT | Download speed in Mbps |
+| upload_speed | INT | Upload speed in Mbps |
+| monthly_price | DECIMAL(10,2) | Regular monthly price |
+| promo_price | DECIMAL(10,2) | Promotional price |
+| promo_period | VARCHAR(50) | Promotional period |
+| contract_term | VARCHAR(50) | Contract duration |
+| source_url | TEXT | Source URL |
+| last_checked | DATETIME | Last verification timestamp |
 
-## Scraper Details
+**Unique Key**: (provider_id, plan_name, speed_label)
 
-### Aussie Broadband (API)
+## Provider IDs
 
-- Uses public API for fastest, most reliable scraping
-- Fallback to Playwright if API unavailable
-- Structured API responses
+- Telstra: 1
+- Optus: 2
+- Aussie Broadband: 3
+- Superloop: 4
 
-### Telstra, Optus, Superloop (Playwright)
+## Data Validation Rules
 
-- Handles JavaScript-rendered content
-- Waits for dynamic page loads
-- Retry logic for timeouts
-- Headless browser mode
-- User-Agent spoofing
+All plans must have:
+- ✅ Non-empty `plan_name`
+- ✅ Valid `price` (positive number)
+- ✅ Valid `speed` (positive integer)
 
-## Error Handling
-
-- Each provider scraper wrapped in try-catch
-- Provider failures don't crash pipeline
-- All errors logged to logs.json
-- Continues with remaining providers
-- Clear error messages with provider context
-
-## Performance Considerations
-
-- Headless browser mode for faster scraping
-- Connection pooling for database
-- Batch inserts with duplicate key updates
-- ~2-5 seconds per dynamic page load
-- API responses typically <1 second
+Invalid records are logged and excluded from output.
 
 ## Logging
 
-All pipeline events logged to `output/logs.json`:
+All logs are stored in `output/logs.json` with the following structure:
 
-- Provider scraping start/completion
-- Plans collected per provider
-- Validation results
-- Database operations
-- JSON file saves
-- Errors with full context
-
-View logs:
-```bash
-cat output/logs.json | python -m json.tool
-```
-
-## Common Issues
-
-### Playwright timeout errors
-- Increase `PLAYWRIGHT_CONFIG["wait_selector_timeout"]` in config.py
-- Check website structure hasn't changed
-
-### Database connection errors
-- Verify MySQL is running
-- Check credentials in .env file
-- Ensure database user has CREATE TABLE permission
-
-### No plans scraped
-- Provider website may be blocking requests
-- Try updating selectors in provider files
-- Check network/firewall access
-
-## Best Practices
-
-1. **Schedule regularly**: Run via cron or task scheduler for daily updates
-2. **Monitor logs**: Check `output/logs.json` for failures
-3. **Backup database**: Regular database backups recommended
-4. **Update selectors**: Websites change - update selectors as needed
-5. **Test individually**: Test each provider separately during development
-
-## Extension
-
-To add a new provider:
-
-1. Create `providers/new_provider.py`
-2. Implement scraper function returning standardized JSON
-3. Add provider config to `config.py`
-4. Add import/call in `main.py` `_scrape_all_providers()`
-5. Test thoroughly
-
-Scraper must return list of dicts with:
-```python
+```json
 {
-    "provider_id": int,
-    "plan_name": str,
-    "speed": int,
-    "price": float,
-    "network_type": str,
-    "source_url": str,
-    # Optional:
-    "upload_speed": int,
-    "promo_price": float,
-    "promo_period": str,
-    "contract": str,
+  "timestamp": "2026-04-20T10:30:00",
+  "status": "success|error|warning|info",
+  "message": "Description of the event",
+  "provider": "provider_name",
+  "data": {}
 }
 ```
 
-## Testing
+## Error Handling
 
-Run individual provider scrapers:
+- Each provider scraper is isolated (failures don't crash the entire system)
+- Retry logic for network requests
+- Graceful fallback from API to Playwright scraping
+- Comprehensive error logging
 
-```python
-# Test Aussie API scraper
-from providers.aussie import scrape_aussie
-plans = scrape_aussie()
-print(f"Aussie: {len(plans)} plans")
+## Customization
 
-# Test Telstra Playwright scraper
-from providers.telstra import scrape_telstra_sync
-plans = scrape_telstra_sync()
-print(f"Telstra: {len(plans)} plans")
-```
+### Adding a New Provider
 
-## Production Deployment
+1. Create a new file in `providers/` directory
+2. Implement the `scrape_<provider>_plans()` function
+3. Add provider configuration to `config.py`
+4. Import and add to the scrapers list in `main.py`
 
-1. Use systemd to run main.py
-2. Implement cron job for scheduled execution
-3. Set up log rotation for logs.json
-4. Monitor database size and performance
-5. Implement weekly database cleanup/archival
-6. Use environment variables for sensitive config
+### Modifying Selectors
+
+Update the CSS selectors in each provider's `extract_plan_from_card()` function based on the actual website structure.
+
+## Notes
+
+- **API Endpoints**: The API URLs in the code are placeholders. Update them with actual API endpoints if available.
+- **Website Changes**: If provider websites change their structure, update the Playwright selectors accordingly.
+- **Rate Limiting**: Consider adding delays between requests to avoid being blocked.
 
 ## License
 
-Proprietary - Internal use only
-
-## Support
-
-For issues or improvements, check:
-- Website selectors (may have changed)
-- Database connection settings
-- Python version (use 3.11+)
-- Playwright browser installation
+MIT License
