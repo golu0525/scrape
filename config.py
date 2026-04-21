@@ -33,6 +33,11 @@ PROVIDERS = {
         'id': 4,
         'name': 'Superloop',
         'enabled': True
+    },
+    'occom': {
+        'id': 5,
+        'name': 'Occom',
+        'enabled': True
     }
 }
 

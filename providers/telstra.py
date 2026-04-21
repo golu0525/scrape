@@ -161,9 +161,11 @@ def extract_plans_from_data_attributes(page) -> List[Dict[str, Any]]:
     uploads = page.query_selector_all('[data-tcom-fixed-plancard-dsq-evening-upload]')
     
     for i, header in enumerate(headers):
-        # Clean plan name - remove "Online exclusive offer" suffix
-        raw_name = header.inner_text().strip()
-        plan_name = raw_name.replace('Online exclusive offer', '').strip()
+        # Use the data attribute for clean plan name, fall back to inner text
+        plan_name = header.get_attribute('data-tcom-fixed-plan-card-header-label') or ''
+        if not plan_name:
+            raw_name = header.inner_text().strip()
+            plan_name = raw_name.split('\n')[0].replace('Online exclusive offer', '').strip()
         
         price = 0
         if i < len(prices):

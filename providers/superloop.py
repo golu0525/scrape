@@ -1,8 +1,11 @@
 """
 Superloop ISP plan scraper.
 Uses API-first approach, falls back to Playwright if needed.
+Extracts plan data from embedded JSON-LD structured data on the nbn plans page.
 """
 
+import re
+import json
 import requests
 from typing import List, Dict, Any
 from playwright.sync_api import sync_playwright
@@ -110,7 +113,8 @@ def parse_superloop_api_plan(plan_data: Dict[str, Any]) -> Dict[str, Any]:
 
 def scrape_via_playwright() -> List[Dict[str, Any]]:
     """
-    Scrape Superloop plans using Playwright (for dynamic websites).
+    Scrape Superloop plans using Playwright with stealth mode.
+    Extracts plan data from embedded JSON-LD structured data and visible card elements.
     
     Returns:
         List of plan dictionaries
@@ -122,26 +126,15 @@ def scrape_via_playwright() -> List[Dict[str, Any]]:
         page = create_stealth_page(browser)
         
         try:
-            # Navigate to Superloop NBN plans page
             page.goto(SUPERLOOP_WEBSITE_URL, timeout=config.PLAYWRIGHT_TIMEOUT, wait_until="domcontentloaded")
+            page.wait_for_timeout(5000)
             
-            # Wait for page to load
-            page.wait_for_timeout(config.PLAYWRIGHT_WAIT_TIME)
+            # Primary: extract from JSON-LD structured data
+            plans = extract_from_json_ld(page)
             
-            # Wait for plan cards to appear
-            page.wait_for_selector('.plan-card, .broadband-plan, .product-tile', 
-                                 timeout=10000, state='visible')
-            
-            # Find all plan cards
-            plan_cards = page.query_selector_all('.plan-card, .broadband-plan, .product-tile')
-            
-            for card in plan_cards:
-                try:
-                    plan = extract_plan_from_card(page, card)
-                    if plan:
-                        plans.append(plan)
-                except Exception as e:
-                    log_error(f"Failed to extract plan from card: {str(e)}", provider="superloop")
+            if not plans:
+                # Fallback: extract from visible plan cards
+                plans = extract_from_plan_cards(page)
             
         except Exception as e:
             log_error(f"Playwright scraping error: {str(e)}", provider="superloop")
@@ -151,75 +144,166 @@ def scrape_via_playwright() -> List[Dict[str, Any]]:
     return plans
 
 
-def extract_plan_from_card(page, card) -> Dict[str, Any]:
+def extract_from_json_ld(page) -> List[Dict[str, Any]]:
     """
-    Extract plan data from a single plan card element.
-    
-    Args:
-        page: Playwright page object
-        card: Playwright element handle for plan card
+    Extract plan data from JSON-LD structured data embedded in the page.
+    Superloop embeds schema.org Product data with plan variants.
     
     Returns:
-        Standardized plan dictionary
+        List of plan dictionaries
+    """
+    plans = []
+    
+    try:
+        scripts = page.query_selector_all('script[type="application/ld+json"]')
+        
+        for script in scripts:
+            text = script.inner_text()
+            data = json.loads(text)
+            
+            # Handle single object or array
+            items = data if isinstance(data, list) else [data]
+            
+            for item in items:
+                if item.get('@type') != 'ProductGroup':
+                    continue
+                    
+                variants = item.get('hasVariant', [])
+                for variant in variants:
+                    plan = parse_json_ld_variant(variant)
+                    if plan:
+                        plans.append(plan)
+        
+        if plans:
+            log_info(f"Extracted {len(plans)} plans from JSON-LD", provider="superloop")
+            
+    except Exception as e:
+        log_error(f"JSON-LD extraction failed: {str(e)}", provider="superloop")
+    
+    return plans
+
+
+def parse_json_ld_variant(variant: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Parse a JSON-LD Product variant into standardized plan format.
+    
+    Example variant:
+    {"name": "Extra Value - nbn 50/20", "description": "Typical evening speed is 50/17Mbps.",
+     "size": "50/20", "offers": {"price": 65}}
     """
     try:
-        # Extract plan name
-        plan_name_elem = card.query_selector('.plan-name, h3, .plan-title, .title')
-        plan_name = plan_name_elem.inner_text().strip() if plan_name_elem else ''
+        name = variant.get('name', '')
+        size = variant.get('size', '')
+        description = variant.get('description', '')
+        offers = variant.get('offers', {})
+        price = float(offers.get('price', 0))
         
-        # Extract speed
-        speed_elem = card.query_selector('.plan-speed, .speed, .mbps-value')
-        speed_text = speed_elem.inner_text().strip() if speed_elem else '0'
-        speed = extract_speed_from_text(speed_text)
+        # Parse download/upload from size field (e.g. "50/20")
+        download_speed = 0
+        upload_speed = 0
+        if size:
+            parts = size.split('/')
+            if len(parts) == 2:
+                download_speed = int(parts[0])
+                upload_speed = int(parts[1])
         
-        # Extract price
-        price_elem = card.query_selector('.plan-price, .price, .monthly-price')
-        price_text = price_elem.inner_text().strip() if price_elem else '0'
-        price = extract_price_from_text(price_text)
+        # Parse typical evening speed from description
+        typical_dl = 0
+        typical_ul = 0
+        typical_match = re.search(r'Typical evening speed is (\d+)/(\d+)', description)
+        if typical_match:
+            typical_dl = int(typical_match.group(1))
+            typical_ul = int(typical_match.group(2))
         
-        # Extract network type
-        network_elem = card.query_selector('.network-type, .technology, .nbn-tier')
-        network_type = network_elem.inner_text().strip() if network_elem else 'NBN'
+        # Connection types from material field
+        materials = variant.get('material', [])
+        connection_types = ', '.join(materials) if materials else 'NBN'
         
-        # Extract upload speed
-        upload_elem = card.query_selector('.upload-speed, .upload-value')
-        upload_text = upload_elem.inner_text().strip() if upload_elem else '0'
-        upload_speed = extract_speed_from_text(upload_text)
-        
-        # Extract contract term
-        contract_elem = card.query_selector('.contract-term, .no-contract')
-        contract = contract_elem.inner_text().strip() if contract_elem else 'No Contract'
-        
-        # Check for promo
-        promo_elem = card.query_selector('.promo, .special-offer, .bonus')
-        promo_price = None
-        promo_period = None
-        if promo_elem:
-            promo_text = promo_elem.inner_text().strip()
-            promo_price = extract_price_from_text(promo_text)
-            # Try to extract promo period
-            import re
-            period_match = re.search(r'(\d+)\s*(months?|mths?)', promo_text, re.IGNORECASE)
-            if period_match:
-                promo_period = f"{period_match.group(1)} months"
+        if not name or price <= 0:
+            return None
         
         return {
             'provider_id': config.PROVIDERS['superloop']['id'],
-            'plan_name': plan_name,
-            'network_type': network_type,
-            'speed': speed,
-            'download_speed': speed,
+            'plan_name': name,
+            'network_type': 'NBN',
+            'speed': download_speed,
+            'download_speed': download_speed,
             'upload_speed': upload_speed,
+            'typical_evening_dl': typical_dl,
+            'typical_evening_ul': typical_ul,
             'price': price,
-            'promo_price': promo_price,
-            'promo_period': promo_period,
-            'contract': contract,
+            'promo_price': None,
+            'promo_period': None,
+            'contract': 'No Contract',
+            'connection_types': connection_types,
             'source_url': SUPERLOOP_WEBSITE_URL
         }
         
     except Exception as e:
-        log_error(f"Error extracting plan from card: {str(e)}", provider="superloop")
+        log_error(f"Failed to parse JSON-LD variant: {str(e)}", provider="superloop")
         return None
+
+
+def extract_from_plan_cards(page) -> List[Dict[str, Any]]:
+    """
+    Fallback: extract plan data from visible plan card elements.
+    
+    Returns:
+        List of plan dictionaries
+    """
+    plans = []
+    
+    try:
+        # Plan cards are inside the #plans section
+        cards = page.query_selector_all('#plans .border.rounded-\\[1\\.25rem\\]')
+        
+        for card in cards:
+            # Plan name
+            name_elem = card.query_selector('h3.text-body-1.font-Avenir95Black.font-bold')
+            plan_name = name_elem.inner_text().strip() if name_elem else ''
+            
+            # Download speed - first p with font-Avenir95Black after "Download"
+            dl_elem = card.query_selector('div:has(> div:has-text("Download")) p.font-Avenir95Black')
+            dl_text = dl_elem.inner_text().strip() if dl_elem else '0'
+            download_speed = extract_speed_from_text(dl_text)
+            
+            # Upload speed
+            ul_elem = card.query_selector('div:has(> div:has-text("Upload")) p.font-Avenir95Black')
+            ul_text = ul_elem.inner_text().strip() if ul_elem else '0'
+            upload_speed = extract_speed_from_text(ul_text)
+            
+            # Price - green promo price or regular
+            promo_elem = card.query_selector('span.text-green-500')
+            regular_elem = card.query_selector('span.line-through')
+            
+            price = 0
+            promo_price = None
+            if promo_elem:
+                promo_price = extract_price_from_text(promo_elem.inner_text())
+                if regular_elem:
+                    price = extract_price_from_text(regular_elem.inner_text())
+                else:
+                    price = promo_price
+            
+            if plan_name and (price > 0 or (promo_price and promo_price > 0)):
+                plans.append({
+                    'provider_id': config.PROVIDERS['superloop']['id'],
+                    'plan_name': plan_name,
+                    'network_type': 'NBN',
+                    'speed': download_speed,
+                    'download_speed': download_speed,
+                    'upload_speed': upload_speed,
+                    'price': price if price > 0 else promo_price,
+                    'promo_price': promo_price,
+                    'promo_period': '6 months',
+                    'contract': 'No Contract',
+                    'source_url': SUPERLOOP_WEBSITE_URL
+                })
+                
+    except Exception as e:
+        log_error(f"Card extraction failed: {str(e)}", provider="superloop")
+    
+    return plans
 
 
 def extract_speed_from_text(text: str) -> int:
