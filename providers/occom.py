@@ -1,6 +1,6 @@
 """
 Occom ISP plan scraper.
-Scrapes nbn plans from the Occom staging website using Playwright.
+Scrapes plans from multiple Occom network pages (NBN, Opticomm, Redtrain, etc.).
 Plan data is extracted from .plan-card elements in an owl-carousel.
 """
 
@@ -12,79 +12,128 @@ from utils.logger import log_info, log_error, log_success
 from utils.stealth import create_stealth_browser, create_stealth_page
 
 
-OCCOM_WEBSITE_URL = "https://staging.occominternet.com/nbn-plans/"
+# All Occom plan page URLs with their network type
+OCCOM_PLAN_PAGES = {
+    'nbn': {
+        'url': 'https://occom.com.au/nbn-plans/',
+        'network_type': 'NBN',
+    },
+    'opticomm': {
+        'url': 'https://occom.com.au/opticomm-plans/',
+        'network_type': 'Opticomm',
+    },
+    'nbn_fttp': {
+        'url': 'https://occom.com.au/nbn-fttp-upgrade/',
+        'network_type': 'NBN FTTP',
+    },
+    'supa': {
+        'url': 'https://occom.com.au/supa-network-plans/',
+        'network_type': 'Supa',
+    },
+    'redtrain': {
+        'url': 'https://occom.com.au/redtrain-plans/',
+        'network_type': 'Redtrain',
+    },
+    'community_fibre': {
+        'url': 'https://occom.com.au/community-fibre-plans/',
+        'network_type': 'Community Fibre',
+    },
+}
 
 
-def scrape_occom_plans() -> List[Dict[str, Any]]:
+def scrape_occom_plans() -> Dict[str, List[Dict[str, Any]]]:
     """
-    Scrape Occom nbn plans using Playwright.
+    Scrape all Occom plan pages. Returns a dict keyed by network type.
     
     Returns:
-        List of plan dictionaries
+        Dict mapping network key to list of plan dicts
     """
-    log_info("Starting Occom scraper", provider="occom")
+    log_info("Starting Occom multi-page scraper", provider="occom")
     
-    try:
-        plans = scrape_via_playwright()
-        if plans:
-            log_success(f"Successfully scraped {len(plans)} plans", provider="occom")
-            return plans
-    except Exception as e:
-        log_error(f"Scraping failed: {str(e)}", provider="occom")
-    
-    log_error("All scraping methods failed for Occom", provider="occom")
-    return []
-
-
-def scrape_via_playwright() -> List[Dict[str, Any]]:
-    """
-    Scrape Occom plans from .plan-card elements inside the owl-carousel.
-    
-    Returns:
-        List of plan dictionaries
-    """
-    plans = []
+    all_plans = {}
     
     with sync_playwright() as p:
         browser = create_stealth_browser(p)
+        
+        for page_key, page_config in OCCOM_PLAN_PAGES.items():
+            url = page_config['url']
+            network_type = page_config['network_type']
+            
+            log_info(f"Scraping {network_type} plans from {url}", provider="occom")
+            
+            plans = scrape_page(browser, url, network_type)
+            all_plans[page_key] = plans
+            
+            if plans:
+                log_success(f"Scraped {len(plans)} {network_type} plans", provider="occom")
+            else:
+                log_error(f"No plans found for {network_type}", provider="occom")
+        
+        browser.close()
+    
+    total = sum(len(v) for v in all_plans.values())
+    log_success(f"Total Occom plans scraped: {total} across {len(all_plans)} pages", provider="occom")
+    
+    return all_plans
+
+
+def scrape_page(browser, url: str, network_type: str) -> List[Dict[str, Any]]:
+    """
+    Scrape plans from a single Occom page.
+    
+    Args:
+        browser: Playwright browser instance
+        url: Page URL
+        network_type: Network label (NBN, Opticomm, etc.)
+    
+    Returns:
+        List of plan dicts
+    """
+    plans = []
+    page = None
+    
+    try:
+        from utils.stealth import create_stealth_page
         page = create_stealth_page(browser)
         
-        try:
-            page.goto(OCCOM_WEBSITE_URL, timeout=30000, wait_until="domcontentloaded")
-            page.wait_for_timeout(5000)
-            
-            # Wait for plan cards to load
-            page.wait_for_selector('.plan-card.newPlanDesign', timeout=15000, state='attached')
-            
-            # Get all plan cards
-            cards = page.query_selector_all('.plan-card.newPlanDesign')
-            log_info(f"Found {len(cards)} plan cards", provider="occom")
-            
-            seen = set()
-            for card in cards:
-                plan = extract_plan_from_card(card)
-                if plan:
-                    # Deduplicate by name+price
-                    key = f"{plan['plan_name']}_{plan['price']}"
-                    if key not in seen:
-                        seen.add(key)
-                        plans.append(plan)
-            
-        except Exception as e:
-            log_error(f"Playwright scraping error: {str(e)}", provider="occom")
-        finally:
-            browser.close()
+        page.goto(url, timeout=30000, wait_until="domcontentloaded")
+        page.wait_for_timeout(5000)
+        
+        # Wait for plan cards
+        page.wait_for_selector('.plan-card', timeout=15000, state='attached')
+        
+        # Try newPlanDesign first, fall back to any .plan-card
+        cards = page.query_selector_all('.plan-card.newPlanDesign')
+        if not cards:
+            cards = page.query_selector_all('.plan-card')
+        
+        log_info(f"Found {len(cards)} cards on {url}", provider="occom")
+        
+        seen = set()
+        for card in cards:
+            plan = extract_plan_from_card(card, network_type, url)
+            if plan:
+                key = f"{plan['plan_name']}_{plan['price']}"
+                if key not in seen:
+                    seen.add(key)
+                    plans.append(plan)
+    
+    except Exception as e:
+        log_error(f"Error scraping {url}: {str(e)}", provider="occom")
+    finally:
+        if page:
+            page.close()
     
     return plans
 
 
-def extract_plan_from_card(card) -> Dict[str, Any]:
+def extract_plan_from_card(card, network_type: str, source_url: str) -> Dict[str, Any]:
     """
     Extract plan data from an Occom .plan-card element.
     
     Structure:
         .plans-name         -> plan name (e.g. "Hyper")
-        .plan-speed         -> nbn tier (e.g. "(nbn2000)")
+        .plan-speed         -> tier (e.g. "(nbn2000)")
         .amount-price       -> download/upload speeds (two elements)
         .prices-regulars    -> promo price
         strike              -> original price
@@ -95,7 +144,7 @@ def extract_plan_from_card(card) -> Dict[str, Any]:
         name_elem = card.query_selector('.plans-name')
         plan_name = name_elem.inner_text().strip() if name_elem else ''
         
-        # NBN tier (e.g. "(nbn2000)")
+        # Tier (e.g. "(nbn2000)")
         tier_elem = card.query_selector('.plan-speed')
         tier_text = tier_elem.inner_text().strip() if tier_elem else ''
         
@@ -141,7 +190,7 @@ def extract_plan_from_card(card) -> Dict[str, Any]:
         return {
             'provider_id': config.PROVIDERS.get('occom', {}).get('id', 5),
             'plan_name': full_name,
-            'network_type': 'NBN',
+            'network_type': network_type,
             'speed': download_speed,
             'download_speed': download_speed,
             'upload_speed': upload_speed,
@@ -149,7 +198,7 @@ def extract_plan_from_card(card) -> Dict[str, Any]:
             'promo_price': promo_price if promo_price != price else None,
             'promo_period': promo_period,
             'contract': 'No Contract',
-            'source_url': OCCOM_WEBSITE_URL
+            'source_url': source_url
         }
         
     except Exception as e:
