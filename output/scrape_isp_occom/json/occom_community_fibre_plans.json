@@ -10,8 +10,7 @@
     "promo_price": 180.0,
     "promo_period": "12 months",
     "contract": "No Contract",
-    "source_url": "https://occom.com.au/community-fibre-plans/",
-    "provider": "occom"
+    "source_url": "https://occom.com.au/community-fibre-plans/"
   },
   {
     "provider_id": 5,
@@ -24,8 +23,7 @@
     "promo_price": 90.0,
     "promo_period": "6 months",
     "contract": "No Contract",
-    "source_url": "https://occom.com.au/community-fibre-plans/",
-    "provider": "occom"
+    "source_url": "https://occom.com.au/community-fibre-plans/"
   },
   {
     "provider_id": 5,
@@ -38,8 +36,7 @@
     "promo_price": 70.0,
     "promo_period": "6 months",
     "contract": "No Contract",
-    "source_url": "https://occom.com.au/community-fibre-plans/",
-    "provider": "occom"
+    "source_url": "https://occom.com.au/community-fibre-plans/"
   },
   {
     "provider_id": 5,
@@ -52,8 +49,7 @@
     "promo_price": 55.0,
     "promo_period": "6 months",
     "contract": "No Contract",
-    "source_url": "https://occom.com.au/community-fibre-plans/",
-    "provider": "occom"
+    "source_url": "https://occom.com.au/community-fibre-plans/"
   },
   {
     "provider_id": 5,
@@ -66,8 +62,7 @@
     "promo_price": 50.0,
     "promo_period": "6 months",
     "contract": "No Contract",
-    "source_url": "https://occom.com.au/community-fibre-plans/",
-    "provider": "occom"
+    "source_url": "https://occom.com.au/community-fibre-plans/"
   },
   {
     "provider_id": 5,
@@ -80,7 +75,6 @@
     "promo_price": 45.0,
     "promo_period": "6 months",
     "contract": "No Contract",
-    "source_url": "https://occom.com.au/community-fibre-plans/",
-    "provider": "occom"
+    "source_url": "https://occom.com.au/community-fibre-plans/"
   }
 ]

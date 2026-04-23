@@ -1104,5 +1104,152 @@
     "message": "Total Occom plans scraped: 41 across 6 pages",
     "provider": "occom",
     "data": {}
+  },
+  {
+    "timestamp": "2026-04-23T10:10:55.273847",
+    "status": "error",
+    "message": "Playwright scraping error: Page.wait_for_selector: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\".plan-card, .nbn-plan, [data-plan]\") to be visible\n",
+    "provider": "aussie",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-23T10:11:33.027949",
+    "status": "info",
+    "message": "Starting Occom multi-page scraper",
+    "provider": "occom",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-23T10:11:34.093287",
+    "status": "info",
+    "message": "Scraping NBN plans from https://occom.com.au/nbn-plans/",
+    "provider": "occom",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-23T10:11:43.245590",
+    "status": "info",
+    "message": "Found 8 cards on https://occom.com.au/nbn-plans/",
+    "provider": "occom",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-23T10:11:44.077894",
+    "status": "success",
+    "message": "Scraped 8 NBN plans",
+    "provider": "occom",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-23T10:11:44.079428",
+    "status": "info",
+    "message": "Scraping Opticomm plans from https://occom.com.au/opticomm-plans/",
+    "provider": "occom",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-23T10:11:52.647721",
+    "status": "info",
+    "message": "Found 7 cards on https://occom.com.au/opticomm-plans/",
+    "provider": "occom",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-23T10:11:53.188612",
+    "status": "success",
+    "message": "Scraped 7 Opticomm plans",
+    "provider": "occom",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-23T10:11:53.191087",
+    "status": "info",
+    "message": "Scraping NBN FTTP plans from https://occom.com.au/nbn-fttp-upgrade/",
+    "provider": "occom",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-23T10:12:01.578573",
+    "status": "info",
+    "message": "Found 8 cards on https://occom.com.au/nbn-fttp-upgrade/",
+    "provider": "occom",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-23T10:12:02.381071",
+    "status": "success",
+    "message": "Scraped 8 NBN FTTP plans",
+    "provider": "occom",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-23T10:12:02.384232",
+    "status": "info",
+    "message": "Scraping Supa plans from https://occom.com.au/supa-network-plans/",
+    "provider": "occom",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-23T10:12:11.554519",
+    "status": "info",
+    "message": "Found 5 cards on https://occom.com.au/supa-network-plans/",
+    "provider": "occom",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-23T10:12:11.973801",
+    "status": "success",
+    "message": "Scraped 5 Supa plans",
+    "provider": "occom",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-23T10:12:11.978621",
+    "status": "info",
+    "message": "Scraping Redtrain plans from https://occom.com.au/redtrain-plans/",
+    "provider": "occom",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-23T10:12:20.704167",
+    "status": "info",
+    "message": "Found 7 cards on https://occom.com.au/redtrain-plans/",
+    "provider": "occom",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-23T10:12:21.356486",
+    "status": "success",
+    "message": "Scraped 7 Redtrain plans",
+    "provider": "occom",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-23T10:12:21.359486",
+    "status": "info",
+    "message": "Scraping Community Fibre plans from https://occom.com.au/community-fibre-plans/",
+    "provider": "occom",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-23T10:12:29.779829",
+    "status": "info",
+    "message": "Found 6 cards on https://occom.com.au/community-fibre-plans/",
+    "provider": "occom",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-23T10:12:30.446308",
+    "status": "success",
+    "message": "Scraped 6 Community Fibre plans",
+    "provider": "occom",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-23T10:12:31.806324",
+    "status": "success",
+    "message": "Total Occom plans scraped: 41 across 6 pages",
+    "provider": "occom",
+    "data": {}
   }
 ]

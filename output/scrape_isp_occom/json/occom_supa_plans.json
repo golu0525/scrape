@@ -10,8 +10,7 @@
     "promo_price": 110.0,
     "promo_period": "6 months",
     "contract": "No Contract",
-    "source_url": "https://occom.com.au/supa-network-plans/",
-    "provider": "occom"
+    "source_url": "https://occom.com.au/supa-network-plans/"
   },
   {
     "provider_id": 5,
@@ -24,8 +23,7 @@
     "promo_price": 95.0,
     "promo_period": "6 months",
     "contract": "No Contract",
-    "source_url": "https://occom.com.au/supa-network-plans/",
-    "provider": "occom"
+    "source_url": "https://occom.com.au/supa-network-plans/"
   },
   {
     "provider_id": 5,
@@ -38,8 +36,7 @@
     "promo_price": 85.0,
     "promo_period": "6 months",
     "contract": "No Contract",
-    "source_url": "https://occom.com.au/supa-network-plans/",
-    "provider": "occom"
+    "source_url": "https://occom.com.au/supa-network-plans/"
   },
   {
     "provider_id": 5,
@@ -52,8 +49,7 @@
     "promo_price": 75.0,
     "promo_period": "6 months",
     "contract": "No Contract",
-    "source_url": "https://occom.com.au/supa-network-plans/",
-    "provider": "occom"
+    "source_url": "https://occom.com.au/supa-network-plans/"
   },
   {
     "provider_id": 5,
@@ -66,7 +62,6 @@
     "promo_price": 65.0,
     "promo_period": "6 months",
     "contract": "No Contract",
-    "source_url": "https://occom.com.au/supa-network-plans/",
-    "provider": "occom"
+    "source_url": "https://occom.com.au/supa-network-plans/"
   }
 ]

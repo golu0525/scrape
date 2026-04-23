@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISP Plan Scraper Dashboard</title>
+    <style>
+        /* ...existing base styles... */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* ...existing styles for header, dashboard, panel, btn, etc... */
+        
+        /* NEW: Filter & Sort Styles */
+        .filters-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.95em;
+            transition: border-color 0.3s;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .sort-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
+        }
+
+        .sort-controls label {
+            font-weight: 600;
+            color: #333;
+            white-space: nowrap;
+        }
+
+        .sort-controls select {
+            padding: 8px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.95em;
+            cursor: pointer;
+        }
+
+        .active-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .filter-tag {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-tag .remove-filter {
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .results-count {
+            color: #666;
+            font-size: 0.95em;
+            margin-left: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌐 ISP Plan Scraper Dashboard</h1>
+            <p class="subtitle">Scrape and analyze internet plans from Australian ISPs</p>
+        </header>
+
+        <div class="dashboard">
+            <!-- Left Panel: Provider Selection -->
+            <div class="panel">
+                <h2>Providers</h2>
+                <div id="provider-list" class="provider-list">
+                    <!-- Loaded dynamically -->
+                </div>
+
+                <div class="scrape-controls">
+                    <button class="btn btn-primary" onclick="scrapeAll()">Scrape All</button>
+                    <button class="btn btn-secondary" onclick="loadAllResults()">Load Saved Data</button>
+                </div>
+            </div>
+
+            <!-- Right Panel: Results with Filters & Sort -->
+            <div class="panel">
+                <h2>Results</h2>
+                
+                <div id="stats-bar" class="stats-bar hidden">
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-providers">0</div>
+                        <div class="stat-label">Providers</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-plans">0</div>
+                        <div class="stat-label">Total Plans</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="price-range">$0</div>
+                        <div class="stat-label">Price Range</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="speed-range">0</div>
+                        <div class="stat-label">Speed Range</div>
+                    </div>
+                </div>
+
+                <!-- Filters Section -->
+                <div id="filters-section" class="filters-section hidden">
+                    <div class="filters-grid">
+                        <div class="filter-group">
+                            <label for="filter-network">Network Type</label>
+                            <select id="filter-network">
+                                <option value="">All Networks</option>
+                                <option value="nbn">NBN</option>
+                                <option value="opticomm">Opticomm</option>
+                                <option value="nbn_fttp">NBN FTTP</option>
+                                <option value="supa">Supa Fast</option>
+                                <option value="redtrain">Redtrain</option>
+                                <option value="community_fibre">Community Fibre</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="filter-min-speed">Min Speed (Mbps)</label>
+                            <input type="number" id="filter-min-speed" placeholder="e.g., 50" min="0">
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="filter-max-price">Max Price ($/mth)</label>
+                            <input type="number" id="filter-max-price" placeholder="e.g., 100" min="0">
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="filter-provider">Provider</label>
+                            <select id="filter-provider">
+                                <option value="">All Providers</option>
+                                <option value="telstra">Telstra</option>
+                                <option value="superloop">Superloop</option>
+                                <option value="occom">Occom</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="filter-actions">
+                        <button class="btn btn-secondary btn-small" onclick="clearFilters()">Clear Filters</button>
+                        <button class="btn btn-primary btn-small" onclick="applyFilters()">Apply Filters</button>
+                    </div>
+
+                    <div id="active-filters" class="active-filters"></div>
+                </div>
+
+                <!-- Sort Controls -->
+                <div id="sort-controls" class="sort-controls hidden">
+                    <label for="sort-by">Sort by:</label>
+                    <select id="sort-by" onchange="applySort()">
+                        <option value="default">Default</option>
+                        <option value="price-asc">Price: Low to High</option>
+                        <option value="price-desc">Price: High to Low</option>
+                        <option value="speed-asc">Speed: Low to High</option>
+                        <option value="speed-desc">Speed: High to Low</option>
+                        <option value="name-asc">Name: A to Z</option>
+                        <option value="name-desc">Name: Z to A</option>
+                    </select>
+
+                    <div class="results-count">
+                        Showing <strong id="visible-count">0</strong> of <strong id="total-count">0</strong> plans
+                    </div>
+                </div>
+
+                <div id="results-content">
+                    <div class="loading">
+                        <p>Select a provider and click "Scrape" or "Load Saved Data"</p>
+                    </div>
+                </div>
+
+                <div id="download-section" class="download-buttons hidden">
+                    <button class="btn btn-success btn-small" onclick="downloadJSON()">📥 Download JSON</button>
+                    <button class="btn btn-success btn-small" onclick="downloadCSV()">📥 Download CSV</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentProvider = null;
+        let allResults = {};
+        let currentPlans = [];
+        let filteredPlans = [];
+
+        // ...existing loadProviders(), scrapeProvider(), scrapeAll(), loadAllResults()...
+
+        // UPDATED: Display results with filter/sort support
+        function displayResults(provider, plans) {
+            const resultsContent = document.getElementById('results-content');
+            
+            if (Array.isArray(plans)) {
+                currentPlans = plans;
+                filteredPlans = [...plans];
+                displayPlansTable(provider, filteredPlans);
+            } else {
+                // Multi-page provider (Occom)
+                let html = `<h3>${provider.toUpperCase()} - Multiple Networks</h3>`;
+                currentPlans = [];
+                for (const [network, networkPlans] of Object.entries(plans)) {
+                    currentPlans.push(...networkPlans);
+                    html += `<h4>${network} (${networkPlans.length} plans)</h4>`;
+                    html += createPlansTable(networkPlans);
+                }
+                filteredPlans = [...currentPlans];
+                resultsContent.innerHTML = html;
+            }
+
+            document.getElementById('filters-section').classList.remove('hidden');
+            document.getElementById('sort-controls').classList.remove('hidden');
+            document.getElementById('download-section').classList.remove('hidden');
+            updateResultsCount();
+        }
+
+        function displayAllResults(results) {
+            const resultsContent = document.getElementById('results-content');
+            let html = '';
+            currentPlans = [];
+
+            for (const [provider, providerData] of Object.entries(results)) {
+                for (const [filename, plans] of Object.entries(providerData)) {
+                    if (Array.isArray(plans)) {
+                        currentPlans.push(...plans);
+                        html += `<h3>${provider.toUpperCase()} - ${filename}</h3>`;
+                        html += createPlansTable(plans);
+                    }
+                }
+            }
+
+            filteredPlans = [...currentPlans];
+            resultsContent.innerHTML = html || '<p>No results found</p>';
+            document.getElementById('filters-section').classList.remove('hidden');
+            document.getElementById('sort-controls').classList.remove('hidden');
+            document.getElementById('download-section').classList.add('hidden');
+            updateResultsCount();
+        }
+
+        // Filter functions
+        function applyFilters() {
+            const network = document.getElementById('filter-network').value;
+            const minSpeed = document.getElementById('filter-min-speed').value;
+            const maxPrice = document.getElementById('filter-max-price').value;
+            const provider = document.getElementById('filter-provider').value;
+
+            filteredPlans = currentPlans.filter(plan => {
+                if (network && plan.network_type !== network) return false;
+                if (minSpeed && plan.download_speed < parseInt(minSpeed)) return false;
+                if (maxPrice && plan.price > parseInt(maxPrice)) return false;
+                if (provider && currentProvider && currentProvider !== provider) return false;
+                return true;
+            });
+
+            displayPlansTable(currentProvider || 'All', filteredPlans);
+            showActiveFilters({ network, minSpeed, maxPrice, provider });
+            updateResultsCount();
+        }
+
+        function showActiveFilters(filters) {
+            const container = document.getElementById('active-filters');
+            container.innerHTML = '';
+
+            if (filters.network) {
+                container.innerHTML += `
+                    <div class="filter-tag">
+                        Network: ${filters.network}
+                        <span class="remove-filter" onclick="removeFilter('network')">×</span>
+                    </div>
+                `;
+            }
+            if (filters.minSpeed) {
+                container.innerHTML += `
+                    <div class="filter-tag">
+                        Min Speed: ${filters.minSpeed} Mbps
+                        <span class="remove-filter" onclick="removeFilter('minSpeed')">×</span>
+                    </div>
+                `;
+            }
+            if (filters.maxPrice) {
+                container.innerHTML += `
+                    <div class="filter-tag">
+                        Max Price: $${filters.maxPrice}
+                        <span class="remove-filter" onclick="removeFilter('maxPrice')">×</span>
+                    </div>
+                `;
+            }
+            if (filters.provider) {
+                container.innerHTML += `
+                    <div class="filter-tag">
+                        Provider: ${filters.provider}
+                        <span class="remove-filter" onclick="removeFilter('provider')">×</span>
+                    </div>
+                `;
+            }
+        }
+
+        function removeFilter(filterType) {
+            document.getElementById(`filter-${filterType.replace('minSpeed', 'min-speed').replace('maxPrice', 'max-price')}`).value = '';
+            applyFilters();
+        }
+
+        function clearFilters() {
+            document.getElementById('filter-network').value = '';
+            document.getElementById('filter-min-speed').value = '';
+            document.getElementById('filter-max-price').value = '';
+            document.getElementById('filter-provider').value = '';
+            document.getElementById('active-filters').innerHTML = '';
+            filteredPlans = [...currentPlans];
+            displayPlansTable(currentProvider || 'All', filteredPlans);
+            updateResultsCount();
+        }
+
+        // Sort functions
+        function applySort() {
+            const sortBy = document.getElementById('sort-by').value;
+            
+            filteredPlans.sort((a, b) => {
+                switch (sortBy) {
+                    case 'price-asc':
+                        return (a.price || 0) - (b.price || 0);
+                    case 'price-desc':
+                        return (b.price || 0) - (a.price || 0);
+                    case 'speed-asc':
+                        return (a.download_speed || 0) - (b.download_speed || 0);
+                    case 'speed-desc':
+                        return (b.download_speed || 0) - (a.download_speed || 0);
+                    case 'name-asc':
+                        return (a.plan_name || '').localeCompare(b.plan_name || '');
+                    case 'name-desc':
+                        return (b.plan_name || '').localeCompare(a.plan_name || '');
+                    default:
+                        return 0;
+                }
+            });
+
+            displayPlansTable(currentProvider || 'All', filteredPlans);
+        }
+
+        function updateResultsCount() {
+            document.getElementById('visible-count').textContent = filteredPlans.length;
+            document.getElementById('total-count').textContent = currentPlans.length;
+        }
+
+        // ...existing updateStats(), showLoading(), showAlert(), downloadJSON(), downloadCSV()...
+    </script>
+</body>
+</html>

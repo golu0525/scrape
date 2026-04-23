@@ -10,8 +10,7 @@
     "promo_price": 115.0,
     "promo_period": "12 months",
     "contract": "No Contract",
-    "source_url": "https://occom.com.au/redtrain-plans/",
-    "provider": "occom"
+    "source_url": "https://occom.com.au/redtrain-plans/"
   },
   {
     "provider_id": 5,
@@ -24,8 +23,7 @@
     "promo_price": 110.0,
     "promo_period": "12 months",
     "contract": "No Contract",
-    "source_url": "https://occom.com.au/redtrain-plans/",
-    "provider": "occom"
+    "source_url": "https://occom.com.au/redtrain-plans/"
   },
   {
     "provider_id": 5,
@@ -38,8 +36,7 @@
     "promo_price": 110.0,
     "promo_period": "12 months",
     "contract": "No Contract",
-    "source_url": "https://occom.com.au/redtrain-plans/",
-    "provider": "occom"
+    "source_url": "https://occom.com.au/redtrain-plans/"
   },
   {
     "provider_id": 5,
@@ -52,8 +49,7 @@
     "promo_price": 85.0,
     "promo_period": "6 months",
     "contract": "No Contract",
-    "source_url": "https://occom.com.au/redtrain-plans/",
-    "provider": "occom"
+    "source_url": "https://occom.com.au/redtrain-plans/"
   },
   {
     "provider_id": 5,
@@ -66,8 +62,7 @@
     "promo_price": 75.0,
     "promo_period": "6 months",
     "contract": "No Contract",
-    "source_url": "https://occom.com.au/redtrain-plans/",
-    "provider": "occom"
+    "source_url": "https://occom.com.au/redtrain-plans/"
   },
   {
     "provider_id": 5,
@@ -80,8 +75,7 @@
     "promo_price": 60.0,
     "promo_period": "6 months",
     "contract": "No Contract",
-    "source_url": "https://occom.com.au/redtrain-plans/",
-    "provider": "occom"
+    "source_url": "https://occom.com.au/redtrain-plans/"
   },
   {
     "provider_id": 5,
@@ -94,7 +88,6 @@
     "promo_price": 48.0,
     "promo_period": "6 months",
     "contract": "No Contract",
-    "source_url": "https://occom.com.au/redtrain-plans/",
-    "provider": "occom"
+    "source_url": "https://occom.com.au/redtrain-plans/"
   }
 ]

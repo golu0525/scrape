@@ -3,29 +3,27 @@
     "provider_id": 1,
     "plan_name": "Basic nbn® Internet Only",
     "network_type": "NBN",
-    "speed": 25,
-    "download_speed": 25,
-    "upload_speed": 4,
+    "speed": 2,
+    "download_speed": 2,
+    "upload_speed": 3,
     "price": 85.0,
     "promo_price": null,
     "promo_period": null,
     "contract": "No Contract",
-    "source_url": "https://www.telstra.com.au/internet/nbn",
-    "provider": "telstra"
+    "source_url": "https://www.telstra.com.au/internet/nbn"
   },
   {
     "provider_id": 1,
     "plan_name": "Basic nbn®",
     "network_type": "NBN",
-    "speed": 25,
-    "download_speed": 25,
-    "upload_speed": 4,
+    "speed": 2,
+    "download_speed": 2,
+    "upload_speed": 3,
     "price": 93.0,
     "promo_price": null,
     "promo_period": null,
     "contract": "No Contract",
-    "source_url": "https://www.telstra.com.au/internet/nbn",
-    "provider": "telstra"
+    "source_url": "https://www.telstra.com.au/internet/nbn"
   },
   {
     "provider_id": 1,
@@ -38,8 +36,7 @@
     "promo_price": null,
     "promo_period": null,
     "contract": "No Contract",
-    "source_url": "https://www.telstra.com.au/internet/nbn",
-    "provider": "telstra"
+    "source_url": "https://www.telstra.com.au/internet/nbn"
   },
   {
     "provider_id": 1,
@@ -52,8 +49,7 @@
     "promo_price": null,
     "promo_period": null,
     "contract": "No Contract",
-    "source_url": "https://www.telstra.com.au/internet/nbn",
-    "provider": "telstra"
+    "source_url": "https://www.telstra.com.au/internet/nbn"
   },
   {
     "provider_id": 1,
@@ -66,8 +62,7 @@
     "promo_price": null,
     "promo_period": null,
     "contract": "No Contract",
-    "source_url": "https://www.telstra.com.au/internet/nbn",
-    "provider": "telstra"
+    "source_url": "https://www.telstra.com.au/internet/nbn"
   },
   {
     "provider_id": 1,
@@ -80,8 +75,7 @@
     "promo_price": null,
     "promo_period": null,
     "contract": "No Contract",
-    "source_url": "https://www.telstra.com.au/internet/nbn",
-    "provider": "telstra"
+    "source_url": "https://www.telstra.com.au/internet/nbn"
   },
   {
     "provider_id": 1,
@@ -94,8 +88,7 @@
     "promo_price": null,
     "promo_period": null,
     "contract": "No Contract",
-    "source_url": "https://www.telstra.com.au/internet/nbn",
-    "provider": "telstra"
+    "source_url": "https://www.telstra.com.au/internet/nbn"
   },
   {
     "provider_id": 1,
@@ -108,8 +101,7 @@
     "promo_price": null,
     "promo_period": null,
     "contract": "No Contract",
-    "source_url": "https://www.telstra.com.au/internet/nbn",
-    "provider": "telstra"
+    "source_url": "https://www.telstra.com.au/internet/nbn"
   },
   {
     "provider_id": 1,
@@ -122,8 +114,7 @@
     "promo_price": null,
     "promo_period": null,
     "contract": "No Contract",
-    "source_url": "https://www.telstra.com.au/internet/nbn",
-    "provider": "telstra"
+    "source_url": "https://www.telstra.com.au/internet/nbn"
   },
   {
     "provider_id": 1,
@@ -136,8 +127,7 @@
     "promo_price": null,
     "promo_period": null,
     "contract": "No Contract",
-    "source_url": "https://www.telstra.com.au/internet/nbn",
-    "provider": "telstra"
+    "source_url": "https://www.telstra.com.au/internet/nbn"
   },
   {
     "provider_id": 1,
@@ -150,7 +140,6 @@
     "promo_price": null,
     "promo_period": null,
     "contract": "No Contract",
-    "source_url": "https://www.telstra.com.au/internet/nbn",
-    "provider": "telstra"
+    "source_url": "https://www.telstra.com.au/internet/nbn"
   }
 ]

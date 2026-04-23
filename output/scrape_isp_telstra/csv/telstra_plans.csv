@@ -1,6 +1,6 @@
 provider,network_type,plan_name,download_speed,upload_speed,price,promo_price,promo_period,contract,typical_evening_dl,typical_evening_ul,source_url
-telstra,NBN,Basic nbn® Internet Only,25,4,85.0,,,No Contract,,,https://www.telstra.com.au/internet/nbn
-telstra,NBN,Basic nbn®,25,4,93.0,,,No Contract,,,https://www.telstra.com.au/internet/nbn
+telstra,NBN,Basic nbn® Internet Only,2,3,85.0,,,No Contract,,,https://www.telstra.com.au/internet/nbn
+telstra,NBN,Basic nbn®,2,3,93.0,,,No Contract,,,https://www.telstra.com.au/internet/nbn
 telstra,NBN,Essential nbn®,50,17,95.0,,,No Contract,,,https://www.telstra.com.au/internet/nbn
 telstra,5G,5G Internet,300,30,85.0,,,No Contract,,,https://www.telstra.com.au/internet/nbn
 telstra,NBN,Essential nbn® Internet Only,50,17,89.0,,,No Contract,,,https://www.telstra.com.au/internet/nbn
