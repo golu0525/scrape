@@ -1,0 +1,16 @@
+[
+  {
+    "provider_id": 1,
+    "plan_name": "5G Internet",
+    "network_type": "5G",
+    "download_speed": 300,
+    "upload_speed": 30,
+    "typical_evening_dl": 300,
+    "typical_evening_ul": 30,
+    "price": 85.0,
+    "promo_price": null,
+    "promo_period": null,
+    "contract": "No Lock-in",
+    "source_url": "https://www.telstra.com.au/internet/5g-home-internet"
+  }
+]

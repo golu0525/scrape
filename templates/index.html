@@ -264,6 +264,132 @@
         .hidden {
             display: none;
         }
+
+        /* Filter & Sort Bar */
+        .filter-sort-bar {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .filter-sort-bar h3 {
+            font-size: 1em;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .filter-group label {
+            font-size: 0.8em;
+            font-weight: 600;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 9px 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9em;
+            background: white;
+            transition: border-color 0.2s;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .btn-filter {
+            padding: 9px 18px;
+            font-size: 0.85em;
+            border-radius: 6px;
+        }
+
+        .btn-reset {
+            background: #e9ecef;
+            color: #495057;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-reset:hover {
+            background: #dee2e6;
+        }
+
+        .active-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .filter-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+        }
+
+        .filter-tag .remove-tag {
+            cursor: pointer;
+            font-weight: bold;
+            opacity: 0.8;
+        }
+
+        .filter-tag .remove-tag:hover {
+            opacity: 1;
+        }
+
+        .results-count {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 10px;
+            padding: 8px 0;
+        }
+
+        .sort-indicator {
+            font-size: 0.75em;
+            margin-left: 4px;
+        }
+
+        .plans-table th.sortable {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .plans-table th.sortable:hover {
+            background: #e9ecef;
+        }
     </style>
 </head>
 <body>
@@ -317,6 +443,51 @@
                     </div>
                 </div>
 
+                <!-- Filter & Sort Bar -->
+                <div id="filter-bar" class="filter-sort-bar hidden">
+                    <h3>🔍 Filter & Sort</h3>
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label>Network Type</label>
+                            <select id="filter-network" onchange="applyFilters()">
+                                <option value="">All Networks</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Min Price ($)</label>
+                            <input type="number" id="filter-price-min" placeholder="0" min="0" onchange="applyFilters()">
+                        </div>
+                        <div class="filter-group">
+                            <label>Max Price ($)</label>
+                            <input type="number" id="filter-price-max" placeholder="Any" min="0" onchange="applyFilters()">
+                        </div>
+                        <div class="filter-group">
+                            <label>Min Speed (Mbps)</label>
+                            <input type="number" id="filter-speed-min" placeholder="0" min="0" onchange="applyFilters()">
+                        </div>
+                        <div class="filter-group">
+                            <label>Max Speed (Mbps)</label>
+                            <input type="number" id="filter-speed-max" placeholder="Any" min="0" onchange="applyFilters()">
+                        </div>
+                        <div class="filter-group">
+                            <label>Sort By</label>
+                            <select id="sort-by" onchange="applyFilters()">
+                                <option value="">Default</option>
+                                <option value="price-asc">Price: Low → High</option>
+                                <option value="price-desc">Price: High → Low</option>
+                                <option value="speed-asc">Speed: Low → High</option>
+                                <option value="speed-desc">Speed: High → Low</option>
+                            </select>
+                        </div>
+                        <div class="filter-actions">
+                            <button class="btn btn-reset btn-filter" onclick="resetFilters()">Reset</button>
+                        </div>
+                    </div>
+                    <div id="active-filters" class="active-filters"></div>
+                </div>
+
+                <div id="results-count" class="results-count hidden"></div>
+
                 <div id="results-content">
                     <div class="loading">
                         <p>Select a provider and click "Scrape" or "Load Saved Data"</p>
@@ -338,236 +509,345 @@
     <script>
         let currentProvider = null;
         let allResults = {};
+        // Master flat list of all currently-loaded plans (unfiltered)
+        let masterPlans = [];
 
-        // Initialize
+        // ── Initialise ──────────────────────────────────────────
         document.addEventListener('DOMContentLoaded', () => {
             loadProviders();
         });
 
-        // Load provider list
+        // ── Provider list ───────────────────────────────────────
         async function loadProviders() {
             try {
-                const response = await fetch('/api/providers');
-                const data = await response.json();
-                
-                const providerList = document.getElementById('provider-list');
-                providerList.innerHTML = '';
-
-                data.providers.forEach(provider => {
+                const res = await fetch('/api/providers');
+                const data = await res.json();
+                const list = document.getElementById('provider-list');
+                list.innerHTML = '';
+                data.providers.forEach(p => {
                     const item = document.createElement('div');
-                    item.className = `provider-item ${provider.has_saved_data ? 'has-data' : ''}`;
+                    item.className = `provider-item ${p.has_saved_data ? 'has-data' : ''}`;
                     item.innerHTML = `
                         <div class="provider-info">
-                            <h3>${provider.name}</h3>
+                            <h3>${p.name}</h3>
                             <div class="provider-status">
-                                ${provider.has_saved_data ? '✓ Data available' : 'No data yet'}
+                                ${p.has_saved_data ? '✓ Data available' : 'No data yet'}
                             </div>
                         </div>
-                        <button class="btn btn-primary btn-small" onclick="scrapeProvider('${provider.key}')">
-                            Scrape
-                        </button>
-                    `;
-                    providerList.appendChild(item);
+                        <button class="btn btn-primary btn-small" onclick="scrapeProvider('${p.key}')">Scrape</button>`;
+                    list.appendChild(item);
                 });
-            } catch (error) {
-                console.error('Error loading providers:', error);
-            }
+            } catch (e) { console.error('Error loading providers:', e); }
         }
 
-        // Scrape single provider
+        // ── Scrape single ───────────────────────────────────────
         async function scrapeProvider(providerName) {
             currentProvider = providerName;
             showLoading();
-
             try {
-                const response = await fetch(`/api/scrape/${providerName}`, {
-                    method: 'POST'
-                });
-                const data = await response.json();
-
+                const res = await fetch(`/api/scrape/${providerName}`, { method: 'POST' });
+                const data = await res.json();
                 if (data.success) {
-                    displayResults(providerName, data.plans);
-                    showAlert(`Successfully scraped ${data.total_plans} plans from ${providerName}`, 'success');
-                    loadProviders(); // Refresh provider list
+                    setMasterPlans(flattenPlans(data.plans, providerName));
+                    showAlert(`Scraped ${data.total_plans} plans from ${providerName}`, 'success');
+                    loadProviders();
+                    document.getElementById('download-section').classList.remove('hidden');
                 } else {
                     showAlert(`Error: ${data.error}`, 'error');
                 }
-            } catch (error) {
-                showAlert(`Error: ${error.message}`, 'error');
-            }
+            } catch (e) { showAlert(`Error: ${e.message}`, 'error'); }
         }
 
-        // Scrape all providers
+        // ── Scrape all ──────────────────────────────────────────
         async function scrapeAll() {
             showLoading();
-
             try {
-                const response = await fetch('/api/scrape/all', {
-                    method: 'POST'
-                });
-                const data = await response.json();
-
+                const res = await fetch('/api/scrape/all', { method: 'POST' });
+                const data = await res.json();
                 if (data.success) {
                     showAlert(`Scraped ${data.total_plans} plans from ${data.providers_scraped} providers`, 'success');
                     loadAllResults();
                 }
-            } catch (error) {
-                showAlert(`Error: ${error.message}`, 'error');
-            }
+            } catch (e) { showAlert(`Error: ${e.message}`, 'error'); }
         }
 
-        // Load all saved results
+        // ── Load saved results ──────────────────────────────────
         async function loadAllResults() {
             showLoading();
-
             try {
-                const response = await fetch('/api/results');
-                const data = await response.json();
-
+                const res = await fetch('/api/results');
+                const data = await res.json();
                 if (data.success) {
                     allResults = data.results;
                     updateStats(data);
-                    displayAllResults(data.results);
-                }
-            } catch (error) {
-                showAlert(`Error: ${error.message}`, 'error');
-            }
-        }
-
-        // Display results
-        function displayResults(provider, plans) {
-            const resultsContent = document.getElementById('results-content');
-            
-            if (Array.isArray(plans)) {
-                displayPlansTable(provider, plans);
-            } else {
-                // Multi-page provider (Occom)
-                let html = `<h3>${provider.toUpperCase()} - Multiple Networks</h3>`;
-                for (const [network, networkPlans] of Object.entries(plans)) {
-                    html += `<h4>${network} (${networkPlans.length} plans)</h4>`;
-                    html += createPlansTable(networkPlans);
-                }
-                resultsContent.innerHTML = html;
-            }
-
-            document.getElementById('download-section').classList.remove('hidden');
-        }
-
-        function displayAllResults(results) {
-            const resultsContent = document.getElementById('results-content');
-            let html = '';
-
-            for (const [provider, providerData] of Object.entries(results)) {
-                for (const [filename, plans] of Object.entries(providerData)) {
-                    if (Array.isArray(plans)) {
-                        html += `<h3>${provider.toUpperCase()} - ${filename}</h3>`;
-                        html += createPlansTable(plans);
+                    // Flatten every provider's "all_plans" into masterPlans
+                    const flat = [];
+                    for (const [prov, provData] of Object.entries(data.results)) {
+                        for (const [fname, plans] of Object.entries(provData)) {
+                            if (Array.isArray(plans)) {
+                                plans.forEach(p => flat.push({ ...p, _provider: prov }));
+                            }
+                        }
                     }
+                    setMasterPlans(flat);
+                    document.getElementById('download-section').classList.add('hidden');
                 }
-            }
-
-            resultsContent.innerHTML = html || '<p>No results found</p>';
-            document.getElementById('download-section').classList.add('hidden');
+            } catch (e) { showAlert(`Error: ${e.message}`, 'error'); }
         }
 
-        function createPlansTable(plans) {
-            if (!plans || plans.length === 0) return '<p>No plans found</p>';
+        // ── Flatten helper (handles list or dict of sub-lists) ──
+        function flattenPlans(plans, provider) {
+            const flat = [];
+            if (Array.isArray(plans)) {
+                plans.forEach(p => flat.push({ ...p, _provider: provider }));
+            } else {
+                for (const sub of Object.values(plans)) {
+                    if (Array.isArray(sub)) sub.forEach(p => flat.push({ ...p, _provider: provider }));
+                }
+            }
+            return flat;
+        }
+
+        // ══════════════════════════════════════════════════════════
+        //  FILTER  &  SORT  ENGINE
+        // ══════════════════════════════════════════════════════════
+
+        /** Store master list, populate network dropdown, show filter bar, render */
+        function setMasterPlans(plans) {
+            masterPlans = plans;
+            populateNetworkFilter(plans);
+            document.getElementById('filter-bar').classList.remove('hidden');
+            applyFilters();           // render with current (default) filters
+        }
+
+        /** Build unique network-type options */
+        function populateNetworkFilter(plans) {
+            const sel = document.getElementById('filter-network');
+            const networks = [...new Set(plans.map(p => p.network_type).filter(Boolean))].sort();
+            // Keep the first "All Networks" option, replace the rest
+            sel.innerHTML = '<option value="">All Networks</option>';
+            networks.forEach(n => {
+                const opt = document.createElement('option');
+                opt.value = n;
+                opt.textContent = n;
+                sel.appendChild(opt);
+            });
+        }
+
+        /** Read filter controls, filter + sort masterPlans, re-render */
+        function applyFilters() {
+            const network  = document.getElementById('filter-network').value;
+            const priceMin = parseFloat(document.getElementById('filter-price-min').value);
+            const priceMax = parseFloat(document.getElementById('filter-price-max').value);
+            const speedMin = parseFloat(document.getElementById('filter-speed-min').value);
+            const speedMax = parseFloat(document.getElementById('filter-speed-max').value);
+            const sortBy   = document.getElementById('sort-by').value;
+
+            let filtered = [...masterPlans];
+
+            // ── Network type ────────────────────────────────────
+            if (network) {
+                filtered = filtered.filter(p => p.network_type === network);
+            }
+
+            // ── Price range ─────────────────────────────────────
+            if (!isNaN(priceMin)) {
+                filtered = filtered.filter(p => (p.price || 0) >= priceMin);
+            }
+            if (!isNaN(priceMax)) {
+                filtered = filtered.filter(p => (p.price || 0) <= priceMax);
+            }
+
+            // ── Speed range ─────────────────────────────────────
+            if (!isNaN(speedMin)) {
+                filtered = filtered.filter(p => (p.download_speed || 0) >= speedMin);
+            }
+            if (!isNaN(speedMax)) {
+                filtered = filtered.filter(p => (p.download_speed || 0) <= speedMax);
+            }
+
+            // ── Sort ────────────────────────────────────────────
+            if (sortBy) {
+                const [field, dir] = sortBy.split('-');          // "price-asc" → ["price","asc"]
+                const key = field === 'price' ? 'price' : 'download_speed';
+                const mul = dir === 'asc' ? 1 : -1;
+                filtered.sort((a, b) => mul * ((a[key] || 0) - (b[key] || 0)));
+            }
+
+            // ── Render ──────────────────────────────────────────
+            renderFilteredTable(filtered);
+            renderActiveFilters({ network, priceMin, priceMax, speedMin, speedMax, sortBy });
+            updateResultsCount(filtered.length, masterPlans.length);
+        }
+
+        /** Reset every filter control and re-render */
+        function resetFilters() {
+            document.getElementById('filter-network').value   = '';
+            document.getElementById('filter-price-min').value = '';
+            document.getElementById('filter-price-max').value = '';
+            document.getElementById('filter-speed-min').value = '';
+            document.getElementById('filter-speed-max').value = '';
+            document.getElementById('sort-by').value          = '';
+            applyFilters();
+        }
+
+        /** Build the results table from filtered plans, grouped by provider */
+        function renderFilteredTable(plans) {
+            const el = document.getElementById('results-content');
+
+            if (!plans || plans.length === 0) {
+                el.innerHTML = '<p style="padding:20px;text-align:center;color:#999;">No plans match the current filters.</p>';
+                return;
+            }
+
+            // Group by provider
+            const grouped = {};
+            plans.forEach(p => {
+                const key = (p._provider || p.provider || 'unknown').toUpperCase();
+                (grouped[key] = grouped[key] || []).push(p);
+            });
+
+            let html = '';
+            for (const [prov, provPlans] of Object.entries(grouped)) {
+                html += `<h3>${prov} — ${provPlans.length} plans</h3>`;
+                html += buildSortableTable(provPlans);
+            }
+            el.innerHTML = html;
+        }
+
+        /** Build a single <table> with sortable column headers */
+        function buildSortableTable(plans) {
+            const sortBy = document.getElementById('sort-by').value;
+            const arrows = { 'price-asc': ' ▲', 'price-desc': ' ▼', 'speed-asc': ' ▲', 'speed-desc': ' ▼' };
+            const priceArrow = sortBy.startsWith('price') ? arrows[sortBy] : '';
+            const speedArrow = sortBy.startsWith('speed') ? arrows[sortBy] : '';
 
             let html = `
                 <table class="plans-table">
-                    <thead>
-                        <tr>
-                            <th>Plan Name</th>
-                            <th>Network</th>
-                            <th>Speed (D/U)</th>
-                            <th>Price/mth</th>
-                            <th>Promo</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
+                    <thead><tr>
+                        <th>Plan Name</th>
+                        <th>Network</th>
+                        <th class="sortable" onclick="toggleSort('speed')">Speed (D/U)<span class="sort-indicator">${speedArrow}</span></th>
+                        <th class="sortable" onclick="toggleSort('price')">Price/mth<span class="sort-indicator">${priceArrow}</span></th>
+                        <th>Promo</th>
+                    </tr></thead><tbody>`;
 
-            plans.forEach(plan => {
-                html += `
-                    <tr>
-                        <td>${plan.plan_name || 'N/A'}</td>
-                        <td>${plan.network_type || 'N/A'}</td>
-                        <td>${plan.download_speed || 'N/A'}/${plan.upload_speed || 'N/A'} Mbps</td>
-                        <td>$${plan.price || 'N/A'}</td>
-                        <td>${plan.promo_price ? `$${plan.promo_price}` : '-'}</td>
-                    </tr>
-                `;
+            plans.forEach(p => {
+                html += `<tr>
+                    <td>${p.plan_name || 'N/A'}</td>
+                    <td>${p.network_type || 'N/A'}</td>
+                    <td>${p.download_speed || 'N/A'}/${p.upload_speed || 'N/A'} Mbps</td>
+                    <td>$${p.price != null ? p.price : 'N/A'}</td>
+                    <td>${p.promo_price ? '$' + p.promo_price : '-'}</td>
+                </tr>`;
             });
 
             html += '</tbody></table>';
             return html;
         }
 
-        function displayPlansTable(provider, plans) {
-            const resultsContent = document.getElementById('results-content');
-            resultsContent.innerHTML = `
-                <h3>${provider.toUpperCase()} - ${plans.length} plans</h3>
-                ${createPlansTable(plans)}
-            `;
+        /** Click a column header to cycle sort: asc → desc → off */
+        function toggleSort(field) {
+            const sel = document.getElementById('sort-by');
+            if (sel.value === `${field}-asc`)       sel.value = `${field}-desc`;
+            else if (sel.value === `${field}-desc`)  sel.value = '';
+            else                                     sel.value = `${field}-asc`;
+            applyFilters();
         }
+
+        /** Show "Showing X of Y plans" count */
+        function updateResultsCount(shown, total) {
+            const el = document.getElementById('results-count');
+            if (shown === total) {
+                el.classList.add('hidden');
+            } else {
+                el.textContent = `Showing ${shown} of ${total} plans`;
+                el.classList.remove('hidden');
+            }
+        }
+
+        /** Render active-filter tags */
+        function renderActiveFilters({ network, priceMin, priceMax, speedMin, speedMax, sortBy }) {
+            const el = document.getElementById('active-filters');
+            let html = '';
+
+            if (network)        html += filterTag('Network: ' + network, 'filter-network');
+            if (!isNaN(priceMin)) html += filterTag('Min Price: $' + priceMin, 'filter-price-min');
+            if (!isNaN(priceMax)) html += filterTag('Max Price: $' + priceMax, 'filter-price-max');
+            if (!isNaN(speedMin)) html += filterTag('Min Speed: ' + speedMin + ' Mbps', 'filter-speed-min');
+            if (!isNaN(speedMax)) html += filterTag('Max Speed: ' + speedMax + ' Mbps', 'filter-speed-max');
+            if (sortBy) {
+                const labels = {
+                    'price-asc': 'Price ↑', 'price-desc': 'Price ↓',
+                    'speed-asc': 'Speed ↑', 'speed-desc': 'Speed ↓'
+                };
+                html += filterTag('Sort: ' + labels[sortBy], 'sort-by');
+            }
+
+            el.innerHTML = html;
+        }
+
+        function filterTag(label, inputId) {
+            return `<span class="filter-tag">${label}
+                        <span class="remove-tag" onclick="clearFilter('${inputId}')">✕</span>
+                    </span>`;
+        }
+
+        /** Clear a single filter by resetting its input and re-applying */
+        function clearFilter(inputId) {
+            const el = document.getElementById(inputId);
+            el.value = '';
+            applyFilters();
+        }
+
+        // ══════════════════════════════════════════════════════════
+        //  STATS  /  UI HELPERS
+        // ══════════════════════════════════════════════════════════
 
         function updateStats(data) {
             document.getElementById('stats-bar').classList.remove('hidden');
             document.getElementById('total-providers').textContent = data.providers.length;
             document.getElementById('total-plans').textContent = data.total_plans;
-            
-            // Calculate price and speed ranges from all plans
+
             const allPlans = [];
-            for (const providerData of Object.values(data.results)) {
-                for (const plans of Object.values(providerData)) {
-                    if (Array.isArray(plans)) {
-                        allPlans.push(...plans);
-                    }
+            for (const provData of Object.values(data.results)) {
+                for (const plans of Object.values(provData)) {
+                    if (Array.isArray(plans)) allPlans.push(...plans);
                 }
             }
-
             if (allPlans.length > 0) {
                 const prices = allPlans.map(p => p.price).filter(Boolean);
                 const speeds = allPlans.map(p => p.download_speed).filter(Boolean);
-                
-                document.getElementById('price-range').textContent = 
+                document.getElementById('price-range').textContent =
                     `$${Math.min(...prices)}-$${Math.max(...prices)}`;
-                document.getElementById('speed-range').textContent = 
+                document.getElementById('speed-range').textContent =
                     `${Math.min(...speeds)}-${Math.max(...speeds)} Mbps`;
             }
         }
 
         function showLoading() {
-            const resultsContent = document.getElementById('results-content');
-            resultsContent.innerHTML = `
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <p>Scraping in progress...</p>
-                </div>
-            `;
+            document.getElementById('results-content').innerHTML = `
+                <div class="loading"><div class="spinner"></div><p>Scraping in progress…</p></div>`;
             document.getElementById('download-section').classList.add('hidden');
+            document.getElementById('filter-bar').classList.add('hidden');
+            document.getElementById('results-count').classList.add('hidden');
         }
 
         function showAlert(message, type) {
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${type}`;
-            alert.textContent = message;
-            
-            document.querySelector('.container').insertBefore(alert, document.querySelector('.dashboard'));
-            
-            setTimeout(() => alert.remove(), 5000);
+            const el = document.createElement('div');
+            el.className = `alert alert-${type}`;
+            el.textContent = message;
+            document.querySelector('.container').insertBefore(el, document.querySelector('.dashboard'));
+            setTimeout(() => el.remove(), 5000);
         }
 
         function downloadJSON() {
-            if (currentProvider) {
+            if (currentProvider)
                 window.location.href = `/api/download/${currentProvider}/${currentProvider}_all_plans.json`;
-            }
         }
-
         function downloadCSV() {
-            if (currentProvider) {
+            if (currentProvider)
                 window.location.href = `/api/download/${currentProvider}/${currentProvider}_all_plans.csv`;
-            }
         }
     </script>
 </body>

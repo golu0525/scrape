@@ -1251,5 +1251,334 @@
     "message": "Total Occom plans scraped: 41 across 6 pages",
     "provider": "occom",
     "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:44:54.457914",
+    "status": "info",
+    "message": "Navigating to https://www.optus.com.au/internet/nbn",
+    "provider": "optus",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:44:56.379025",
+    "status": "info",
+    "message": "Status: 200",
+    "provider": "optus",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:45:01.650498",
+    "status": "info",
+    "message": "Found 7 plan cards",
+    "provider": "optus",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:45:02.216421",
+    "status": "success",
+    "message": "Extracted 7 plans from Optus",
+    "provider": "optus",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:52:00.890841",
+    "status": "info",
+    "message": "Scraping nbn: https://www.superloop.com/internet/nbn/",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:52:01.725256",
+    "status": "info",
+    "message": "Status: 200",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:52:08.635953",
+    "status": "success",
+    "message": "nbn: 9 plans",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:52:09.199270",
+    "status": "info",
+    "message": "Scraping fibre: https://www.superloop.com/internet/fibre/",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:52:10.067210",
+    "status": "info",
+    "message": "Status: 200",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:52:15.766053",
+    "status": "success",
+    "message": "fibre: 7 plans",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:52:16.069499",
+    "status": "info",
+    "message": "Scraping flip_to_fibre: https://www.superloop.com/flip-to-fibre/",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:52:16.925503",
+    "status": "info",
+    "message": "Status: 200",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:52:22.391169",
+    "status": "info",
+    "message": "Rounded cards found: 5",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:52:25.177468",
+    "status": "success",
+    "message": "flip_to_fibre: 5 plans",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:52:25.554149",
+    "status": "info",
+    "message": "Scraping fixed_wireless: https://www.superloop.com/internet/fixed-wireless/",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:52:26.405946",
+    "status": "info",
+    "message": "Status: 200",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:52:32.061883",
+    "status": "info",
+    "message": "Fixed wireless cards found: 3",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:52:32.178753",
+    "status": "success",
+    "message": "fixed_wireless: 1 plans",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:52:34.590711",
+    "status": "success",
+    "message": "Total Superloop plans: 22",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:53:54.568926",
+    "status": "info",
+    "message": "Scraping nbn: https://www.superloop.com/internet/nbn/",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:53:56.381266",
+    "status": "info",
+    "message": "Status: 200",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:54:02.561035",
+    "status": "success",
+    "message": "nbn: 9 plans",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:54:02.939767",
+    "status": "info",
+    "message": "Scraping fibre: https://www.superloop.com/internet/fibre/",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:54:03.874961",
+    "status": "info",
+    "message": "Status: 200",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:54:11.234808",
+    "status": "success",
+    "message": "fibre: 7 plans",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:54:11.695588",
+    "status": "info",
+    "message": "Scraping flip_to_fibre: https://www.superloop.com/flip-to-fibre/",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:54:12.614385",
+    "status": "info",
+    "message": "Status: 200",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:54:19.649401",
+    "status": "info",
+    "message": "Rounded cards found: 5",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:54:21.125825",
+    "status": "success",
+    "message": "flip_to_fibre: 5 plans",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:54:21.701131",
+    "status": "info",
+    "message": "Scraping fixed_wireless: https://www.superloop.com/internet/fixed-wireless/",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:54:22.631238",
+    "status": "info",
+    "message": "Status: 200",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:54:28.098243",
+    "status": "info",
+    "message": "Fixed wireless cards found: 6",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:54:28.301796",
+    "status": "success",
+    "message": "fixed_wireless: 3 plans",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T09:54:30.460396",
+    "status": "success",
+    "message": "Total Superloop plans: 24",
+    "provider": "superloop",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T10:19:56.580428",
+    "status": "info",
+    "message": "Scraping plans: https://www.telstra.com.au/internet/plans",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T10:19:59.136868",
+    "status": "info",
+    "message": "Status: 200",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T10:20:07.582609",
+    "status": "success",
+    "message": "plans: 17 plans",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T10:20:07.785447",
+    "status": "info",
+    "message": "Scraping 5g_home: https://www.telstra.com.au/internet/5g-home-internet",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T10:20:09.807666",
+    "status": "info",
+    "message": "Status: 200",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T10:20:16.000834",
+    "status": "success",
+    "message": "5g_home: 1 plans",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T10:20:16.119322",
+    "status": "info",
+    "message": "Scraping starlink: https://www.telstra.com.au/internet/starlink",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T10:20:17.508008",
+    "status": "info",
+    "message": "Status: 200",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T10:20:23.901307",
+    "status": "success",
+    "message": "starlink: 1 plans",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T10:20:24.066123",
+    "status": "info",
+    "message": "Scraping small_business: https://www.telstra.com.au/small-business/internet",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T10:20:26.315959",
+    "status": "info",
+    "message": "Status: 200",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T10:20:33.206281",
+    "status": "success",
+    "message": "small_business: 11 plans",
+    "provider": "telstra",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T10:20:34.759266",
+    "status": "success",
+    "message": "Total Telstra plans: 30",
+    "provider": "telstra",
+    "data": {}
   }
 ]
