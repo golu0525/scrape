@@ -138,7 +138,7 @@
     "upload_speed": 48,
     "price": 90.0,
     "promo_price": 85.0,
-    "promo_period": "",
+    "promo_period": null,
     "contract": "No Contract",
     "source_url": "https://occom.com.au/opticomm-plans/"
   },
