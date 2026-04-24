@@ -1580,5 +1580,453 @@
     "message": "Total Telstra plans: 30",
     "provider": "telstra",
     "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:29:02.581410",
+    "status": "info",
+    "message": "Scraping nbn: https://www.tpg.com.au/nbn",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:29:05.049906",
+    "status": "info",
+    "message": "Status: 200",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:29:11.199178",
+    "status": "info",
+    "message": "Found 50 nbnLabels cards",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:29:14.157999",
+    "status": "success",
+    "message": "nbn: 9 plans",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:29:14.207744",
+    "status": "info",
+    "message": "Skipping fibre_upgrade (informational)",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:29:14.306766",
+    "status": "info",
+    "message": "Scraping home_wireless: https://www.tpg.com.au/home-wireless-broadband",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:29:18.335035",
+    "status": "info",
+    "message": "Status: 200",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:29:24.443861",
+    "status": "success",
+    "message": "home_wireless: 1 plans",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:29:24.576439",
+    "status": "info",
+    "message": "Scraping 5g_home: https://www.tpg.com.au/5g-home-broadband",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:29:29.811444",
+    "status": "info",
+    "message": "Status: 200",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:29:36.138163",
+    "status": "success",
+    "message": "5g_home: 2 plans",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:29:36.344469",
+    "status": "info",
+    "message": "Scraping fttb: https://www.tpg.com.au/fttb",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:29:39.289535",
+    "status": "info",
+    "message": "Status: 200",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:29:45.415679",
+    "status": "info",
+    "message": "Found 3 FTTB plan-cards",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:29:45.577641",
+    "status": "success",
+    "message": "fttb: 3 plans",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:29:46.359077",
+    "status": "success",
+    "message": "Total TPG plans: 15",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:30:22.889515",
+    "status": "info",
+    "message": "Scraping nbn: https://www.tpg.com.au/nbn",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:30:25.557364",
+    "status": "info",
+    "message": "Status: 200",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:30:31.706575",
+    "status": "info",
+    "message": "Found 50 nbnLabels cards",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:30:34.516162",
+    "status": "success",
+    "message": "nbn: 7 plans",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:30:34.569391",
+    "status": "info",
+    "message": "Skipping fibre_upgrade (informational)",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:30:34.718038",
+    "status": "info",
+    "message": "Scraping home_wireless: https://www.tpg.com.au/home-wireless-broadband",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:30:38.570256",
+    "status": "info",
+    "message": "Status: 200",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:30:44.676236",
+    "status": "success",
+    "message": "home_wireless: 1 plans",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:30:44.813590",
+    "status": "info",
+    "message": "Scraping 5g_home: https://www.tpg.com.au/5g-home-broadband",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:30:48.559193",
+    "status": "info",
+    "message": "Status: 200",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:30:54.706205",
+    "status": "success",
+    "message": "5g_home: 2 plans",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:30:54.921039",
+    "status": "info",
+    "message": "Scraping fttb: https://www.tpg.com.au/fttb",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:30:58.612618",
+    "status": "info",
+    "message": "Status: 200",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:31:04.801996",
+    "status": "info",
+    "message": "Found 3 FTTB plan-cards",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:31:04.970913",
+    "status": "success",
+    "message": "fttb: 3 plans",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:31:06.569118",
+    "status": "success",
+    "message": "Total TPG plans: 13",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:33:08.227224",
+    "status": "info",
+    "message": "Scraping nbn: https://www.tpg.com.au/nbn",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:33:15.789529",
+    "status": "info",
+    "message": "Status: 200",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:33:21.850136",
+    "status": "info",
+    "message": "Found 50 nbnLabels cards",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:33:22.634515",
+    "status": "success",
+    "message": "nbn: 7 plans",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:33:22.653466",
+    "status": "info",
+    "message": "Skipping fibre_upgrade (informational)",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:33:22.745157",
+    "status": "info",
+    "message": "Scraping home_wireless: https://www.tpg.com.au/home-wireless-broadband",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:33:28.660679",
+    "status": "info",
+    "message": "Status: 200",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:33:34.722547",
+    "status": "success",
+    "message": "home_wireless: 1 plans",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:33:34.803526",
+    "status": "info",
+    "message": "Scraping 5g_home: https://www.tpg.com.au/5g-home-broadband",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:33:39.429645",
+    "status": "info",
+    "message": "Status: 200",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:33:45.500268",
+    "status": "success",
+    "message": "5g_home: 2 plans",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:33:45.603161",
+    "status": "info",
+    "message": "Scraping fttb: https://www.tpg.com.au/fttb",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:33:48.969432",
+    "status": "info",
+    "message": "Status: 200",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:33:55.015944",
+    "status": "info",
+    "message": "Found 3 FTTB plan-cards",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:33:55.076937",
+    "status": "success",
+    "message": "fttb: 3 plans",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:33:56.397625",
+    "status": "success",
+    "message": "Total TPG plans: 13",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:35:34.043842",
+    "status": "info",
+    "message": "Scraping nbn: https://www.tpg.com.au/nbn",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:35:36.524194",
+    "status": "info",
+    "message": "Status: 200",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:35:42.586127",
+    "status": "info",
+    "message": "Found 50 nbnLabels cards",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:35:43.401396",
+    "status": "success",
+    "message": "nbn: 7 plans",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:35:43.417652",
+    "status": "info",
+    "message": "Skipping fibre_upgrade (informational)",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:35:43.483013",
+    "status": "info",
+    "message": "Scraping home_wireless: https://www.tpg.com.au/home-wireless-broadband",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:35:46.870291",
+    "status": "info",
+    "message": "Status: 200",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:35:52.918466",
+    "status": "success",
+    "message": "home_wireless: 1 plans",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:35:53.029839",
+    "status": "info",
+    "message": "Scraping 5g_home: https://www.tpg.com.au/5g-home-broadband",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:35:58.805400",
+    "status": "info",
+    "message": "Status: 200",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:36:04.855544",
+    "status": "success",
+    "message": "5g_home: 2 plans",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:36:04.920623",
+    "status": "info",
+    "message": "Scraping fttb: https://www.tpg.com.au/fttb",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:36:08.382225",
+    "status": "info",
+    "message": "Status: 200",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:36:14.466015",
+    "status": "info",
+    "message": "Found 3 FTTB plan-cards",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:36:14.553681",
+    "status": "success",
+    "message": "fttb: 3 plans",
+    "provider": "tpg",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-04-24T13:36:15.978231",
+    "status": "success",
+    "message": "Total TPG plans: 13",
+    "provider": "tpg",
+    "data": {}
   }
 ]

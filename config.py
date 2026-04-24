@@ -38,6 +38,11 @@ PROVIDERS = {
         'id': 5,
         'name': 'Occom',
         'enabled': True
+    },
+    'tpg': {
+        'id': 6,
+        'name': 'TPG',
+        'enabled': True
     }
 }
 

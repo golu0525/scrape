@@ -85,6 +85,8 @@ def scrape_provider(provider_name: str) -> Dict[str, Any]:
             plans = provider_module.scrape_superloop_plans()
         elif hasattr(provider_module, 'scrape_occom_plans'):
             plans = provider_module.scrape_occom_plans()
+        elif hasattr(provider_module, 'scrape_tpg_plans'):
+            plans = provider_module.scrape_tpg_plans()
         elif hasattr(provider_module, 'scrape_via_playwright'):
             plans = provider_module.scrape_via_playwright()
         else:
