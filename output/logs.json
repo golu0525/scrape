@@ -2028,5 +2028,26 @@
     "message": "Total TPG plans: 13",
     "provider": "tpg",
     "data": {}
+  },
+  {
+    "timestamp": "2026-04-25T22:08:45.885090",
+    "status": "info",
+    "message": "Starting Occom multi-page scraper",
+    "provider": "occom",
+    "data": {}
+  },
+  {
+    "timestamp": "2026-05-01T12:42:30.286945",
+    "status": "info",
+    "message": "Starting competitive benchmark analysis",
+    "provider": null,
+    "data": {}
+  },
+  {
+    "timestamp": "2026-05-01T12:42:30.383643",
+    "status": "success",
+    "message": "Benchmark complete: 0 wins, 8 gaps across 8 tiers",
+    "provider": null,
+    "data": {}
   }
 ]

@@ -14,6 +14,9 @@ from utils.logger import log_info, log_error, log_success, log_warning
 from utils.db import create_connection, create_table_if_not_exists, insert_plans_batch
 from utils.save_json import save_plans_to_json
 from utils.validator import validate_plans, clean_plan_data
+from utils.benchmark import run_benchmark, save_benchmark_report, save_benchmark_csv
+from utils.alerts import run_alerts
+from benchmark_report import generate_html_report
 from providers import telstra, optus, aussie, superloop
 from scrapers.renderer import create_renderer_scraper, SiteConfig
 import config
@@ -264,6 +267,30 @@ def run_pipeline():
         # Step 5: Save to JSON
         json_success = save_to_json(valid_plans)
         
+        # Step 6: Run competitive benchmark
+        log_info("Running competitive benchmark analysis")
+        benchmark_report = run_benchmark(valid_plans)
+        if 'error' not in benchmark_report:
+            save_benchmark_report(benchmark_report)
+            save_benchmark_csv(benchmark_report)
+            generate_html_report(benchmark_report)
+            log_success(
+                f"Benchmark: Occom wins {benchmark_report['summary']['occom_cheapest_tiers']} of "
+                f"{benchmark_report['summary']['total_speed_tiers']} tiers "
+                f"({benchmark_report['summary']['occom_win_rate']}% win rate)"
+            )
+        else:
+            log_warning(f"Benchmark skipped: {benchmark_report.get('error')}")
+
+        # Step 7: Run alerts
+        log_info("Running alert checks")
+        alert_report = run_alerts(valid_plans, benchmark_report if 'error' not in benchmark_report else None)
+        if alert_report['total_alerts'] > 0:
+            log_warning(f"Alerts: {alert_report['total_alerts']} "
+                        f"({alert_report['high']} high, {alert_report['medium']} medium)")
+        else:
+            log_success("No new alerts")
+        
         # Final summary
         log_info("=" * 50)
         log_info("Pipeline Execution Summary")
@@ -271,6 +298,8 @@ def run_pipeline():
         log_success(f"Total plans processed: {len(valid_plans)}")
         log_success(f"Database save: {'Success' if db_success else 'Failed'}")
         log_success(f"JSON save: {'Success' if json_success else 'Failed'}")
+        log_success(f"Benchmark: {'Generated' if 'error' not in benchmark_report else 'Skipped'}")
+        log_success(f"Alerts: {alert_report['total_alerts']} generated")
         log_info("=" * 50)
         
         return db_success and json_success

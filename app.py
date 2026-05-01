@@ -3,6 +3,7 @@ Flask API backend for ISP scraper frontend dashboard.
 Provides REST endpoints for scraping, viewing results, and downloading files.
 """
 from flask import Flask, jsonify, request, send_file, render_template
+import json
 import os
 import sys
 
@@ -16,6 +17,9 @@ from scraper_service import (
     download_json,
     download_csv
 )
+from utils.benchmark import run_benchmark, load_all_plans, save_benchmark_report, save_benchmark_csv
+from utils.alerts import run_alerts
+from benchmark_report import generate_html_report, run_and_save_benchmark
 
 app = Flask(__name__, template_folder='templates')
 
@@ -150,6 +154,118 @@ def api_status():
         'working_providers': len(working),
         'blocked_providers': len(providers) - len(working)
     })
+
+
+# ── Benchmark Routes ──────────────────────────────────────────────
+
+
+@app.route('/api/benchmark', methods=['GET'])
+def api_get_benchmark():
+    """Get the latest benchmark report (from saved file or generate fresh)."""
+    report_path = os.path.join('output', 'benchmark_report.json')
+    if os.path.exists(report_path):
+        with open(report_path, 'r', encoding='utf-8') as f:
+            report = json.load(f)
+        return jsonify({'success': True, 'report': report})
+    return jsonify({'success': False, 'error': 'No benchmark report found. Run /api/benchmark/run first.'}), 404
+
+
+@app.route('/api/benchmark/run', methods=['POST'])
+def api_run_benchmark():
+    """Run a fresh benchmark analysis and generate all reports."""
+    result = run_and_save_benchmark()
+    if 'error' in result and 'report' not in result:
+        return jsonify({'success': False, 'error': result['error']}), 500
+    return jsonify({
+        'success': True,
+        'summary': result['report']['summary'],
+        'files': result['files'],
+    })
+
+
+@app.route('/api/benchmark/advantages', methods=['GET'])
+def api_benchmark_advantages():
+    """Get tiers where Occom is the cheapest provider."""
+    report_path = os.path.join('output', 'benchmark_report.json')
+    if not os.path.exists(report_path):
+        return jsonify({'success': False, 'error': 'Run benchmark first'}), 404
+    with open(report_path, 'r', encoding='utf-8') as f:
+        report = json.load(f)
+    return jsonify({
+        'success': True,
+        'advantages': report.get('occom_advantages', []),
+        'total': len(report.get('occom_advantages', []))
+    })
+
+
+@app.route('/api/benchmark/gaps', methods=['GET'])
+def api_benchmark_gaps():
+    """Get tiers where Occom is NOT the cheapest provider."""
+    report_path = os.path.join('output', 'benchmark_report.json')
+    if not os.path.exists(report_path):
+        return jsonify({'success': False, 'error': 'Run benchmark first'}), 404
+    with open(report_path, 'r', encoding='utf-8') as f:
+        report = json.load(f)
+    return jsonify({
+        'success': True,
+        'gaps': report.get('occom_gaps', []),
+        'total': len(report.get('occom_gaps', []))
+    })
+
+
+@app.route('/api/alerts', methods=['GET'])
+def api_get_alerts():
+    """Get the latest alerts."""
+    alerts_path = os.path.join('output', 'alerts.json')
+    if not os.path.exists(alerts_path):
+        return jsonify({'success': True, 'alerts': [], 'total': 0})
+    with open(alerts_path, 'r', encoding='utf-8') as f:
+        history = json.load(f)
+    latest = history[-1] if history else {'alerts': [], 'total_alerts': 0}
+    return jsonify({
+        'success': True,
+        'total': latest.get('total_alerts', 0),
+        'high': latest.get('high', 0),
+        'medium': latest.get('medium', 0),
+        'low': latest.get('low', 0),
+        'alerts': latest.get('alerts', []),
+        'generated_at': latest.get('generated_at', '')
+    })
+
+
+@app.route('/api/alerts/run', methods=['POST'])
+def api_run_alerts():
+    """Run alert checks against current plans data."""
+    plans = load_all_plans()
+    if not plans:
+        return jsonify({'success': False, 'error': 'No plan data available'}), 404
+
+    # Load benchmark report if available
+    benchmark_report = None
+    report_path = os.path.join('output', 'benchmark_report.json')
+    if os.path.exists(report_path):
+        with open(report_path, 'r', encoding='utf-8') as f:
+            benchmark_report = json.load(f)
+
+    alert_report = run_alerts(plans, benchmark_report)
+    return jsonify({
+        'success': True,
+        'total': alert_report['total_alerts'],
+        'high': alert_report['high'],
+        'medium': alert_report['medium'],
+        'low': alert_report['low'],
+        'alerts': alert_report['alerts'],
+    })
+
+
+@app.route('/benchmark')
+def benchmark_dashboard():
+    """Serve the benchmark HTML dashboard."""
+    dashboard_path = os.path.join('output', 'benchmark_dashboard.html')
+    if os.path.exists(dashboard_path):
+        with open(dashboard_path, 'r', encoding='utf-8') as f:
+            return f.read()
+    return "No benchmark dashboard generated yet. <a href='/api/benchmark/run'>Run benchmark</a> first.", 404
 
 
 if __name__ == '__main__':
