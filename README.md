@@ -139,12 +139,15 @@ scrape/
 │   ├── occom.py                 # Occom scraper
 │   ├── optus.py                 # Optus scraper
 │   ├── superloop.py             # Superloop scraper
-│   └── telstra.py               # Telstra scraper
+│   ├── telstra.py               # Telstra scraper
+│   └── tpg.py                   # TPG scraper
 ├── scrapers/                     # Generic scraping utilities
 │   ├── __init__.py
 │   └── renderer.py              # Rendered HTML scraper orchestrator
 ├── utils/                        # Utility modules
 │   ├── __init__.py
+│   ├── alerts.py                # Automated price change & gap alert system
+│   ├── benchmark.py             # Competitive price benchmarking engine
 │   ├── db.py                    # Database operations (MySQL)
 │   ├── discover_apis.py         # API endpoint discovery
 │   ├── html_parser.py           # HTML parsing utilities
@@ -153,25 +156,66 @@ scrape/
 │   ├── save_json.py             # JSON file operations
 │   ├── stealth.py               # Anti-detection utilities
 │   └── validator.py             # Data validation and cleaning
+├── templates/                    # Flask HTML templates
+│   └── index.html               # Main scraper dashboard UI
 ├── output/                       # Output directory
 │   ├── .gitkeep
-│   ├── investigation/           # Investigation outputs
+│   ├── all_plans.json           # Combined plans from all providers
+│   ├── all_plans.csv            # Combined plans CSV export
+│   ├── benchmark_report.json    # Competitive benchmark report (JSON)
+│   ├── benchmark_report.csv     # Benchmark report (CSV for marketing)
+│   ├── benchmark_dashboard.html # Interactive benchmark dashboard
 │   ├── logs.json                # JSON log file
-│   └── stealth_test/            # Stealth test outputs
+│   ├── alerts.json              # Price change & gap alert history
+│   ├── plans_snapshot.json      # Snapshot for diff-based alerts
+│   ├── investigation/           # Investigation outputs
+│   ├── stealth_test/            # Stealth test outputs
+│   └── scrape_isp_<provider>/   # Per-provider scraped data (json/csv)
 ├── config.py                     # Configuration settings
 ├── database.sql                  # Database schema
 ├── main.py                       # Main pipeline orchestrator
+├── app.py                        # Flask API server & dashboard backend
+├── scraper_service.py            # Shared scraper service (CLI + API)
+├── benchmark_report.py           # Benchmark report generator (JSON/CSV/HTML)
 ├── requirements.txt              # Python dependencies
 ├── README.md                     # This file
-├── debug_telstra.py              # Debug scripts for Telstra
-├── investigate_deep.py           # Deep investigation scripts
-├── investigate_occom.py          # Occom investigation
-├── investigate_sites.py          # Site investigation
-├── investigate_superloop.py      # Superloop investigation
+│
+├── *_apis.json                   # API endpoint configs per provider
+│   ├── all_provider_apis.json
+│   ├── aussie_apis.json
+│   ├── optus_apis.json
+│   ├── superloop_apis.json
+│   └── telstra_apis.json
+│
+├── investigate_*.py              # Investigation scripts per provider
+│   ├── investigate_deep.py
+│   ├── investigate_occom.py
+│   ├── investigate_optus.py
+│   ├── investigate_optus2.py
+│   ├── investigate_sites.py
+│   ├── investigate_superloop.py
+│   ├── investigate_superloop_cards.py
+│   ├── investigate_superloop_pages.py
+│   ├── investigate_telstra_detail.py
+│   ├── investigate_telstra_pages.py
+│   ├── investigate_tpg.py
+│   ├── investigate_tpg_deep.py
+│   ├── investigate_vodafone.py
+│   └── investigate_vodafone_deep.py
+│
+├── test_*.py                     # Test scripts
+│   ├── test_optus.py
+│   ├── test_render.py
+│   ├── test_sample.py
+│   ├── test_stealth.py
+│   ├── test_superloop.py
+│   ├── test_telstra.py
+│   └── test_tpg.py
+│
+├── analyze_optus.py              # Optus analysis script
+├── debug_telstra.py              # Telstra debug script
 ├── show_output.py                # Output display utility
-├── test_render.py                # Rendering tests
-├── test_sample.py                # Sample tests
-└── test_stealth.py               # Stealth mode tests
+└── update_output.py              # Output update utility
 ```
 
 ## Database Schema
