@@ -20,6 +20,7 @@ from scraper_service import (
 from utils.benchmark import run_benchmark, load_all_plans, save_benchmark_report, save_benchmark_csv
 from utils.alerts import run_alerts
 from benchmark_report import generate_html_report, run_and_save_benchmark
+from roi_calculator import compute_roi_data, generate_roi_page, run_and_save_roi
 
 app = Flask(__name__, template_folder='templates')
 
@@ -266,6 +267,42 @@ def benchmark_dashboard():
         with open(dashboard_path, 'r', encoding='utf-8') as f:
             return f.read()
     return "No benchmark dashboard generated yet. <a href='/api/benchmark/run'>Run benchmark</a> first.", 404
+
+
+# ── ROI Calculator Routes ─────────────────────────────────────────
+
+
+@app.route('/roi')
+def roi_dashboard():
+    """Serve the ROI Calculator HTML page."""
+    roi_path = os.path.join('output', 'roi_calculator.html')
+    if os.path.exists(roi_path):
+        with open(roi_path, 'r', encoding='utf-8') as f:
+            return f.read()
+    return "No ROI calculator generated yet. <a href='/api/roi/generate'>Generate now</a>.", 404
+
+
+@app.route('/api/roi', methods=['GET'])
+def api_get_roi():
+    """Get ROI data for all plans (JSON)."""
+    data = compute_roi_data()
+    if 'error' in data:
+        return jsonify({'success': False, 'error': data['error']}), 404
+    return jsonify({'success': True, **data})
+
+
+@app.route('/api/roi/generate', methods=['POST'])
+def api_generate_roi():
+    """Regenerate the ROI calculator page from latest data."""
+    result = run_and_save_roi()
+    if 'error' in result:
+        return jsonify({'success': False, 'error': result['error']}), 500
+    return jsonify({
+        'success': True,
+        'total_plans': result['data']['total_plans'],
+        'avg_roi': result['data']['avg_roi'],
+        'file': result['file'],
+    })
 
 
 if __name__ == '__main__':

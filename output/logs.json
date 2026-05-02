@@ -2049,5 +2049,19 @@
     "message": "Benchmark complete: 0 wins, 8 gaps across 8 tiers",
     "provider": null,
     "data": {}
+  },
+  {
+    "timestamp": "2026-05-02T15:27:38.144768",
+    "status": "info",
+    "message": "Generating Speed/Price ROI Calculator",
+    "provider": null,
+    "data": {}
+  },
+  {
+    "timestamp": "2026-05-02T15:27:38.251472",
+    "status": "success",
+    "message": "ROI Calculator: 74 plans ranked, best ROI = 13.79 Mbps/$ (Superloop)",
+    "provider": null,
+    "data": {}
   }
 ]

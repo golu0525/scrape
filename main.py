@@ -17,6 +17,7 @@ from utils.validator import validate_plans, clean_plan_data
 from utils.benchmark import run_benchmark, save_benchmark_report, save_benchmark_csv
 from utils.alerts import run_alerts
 from benchmark_report import generate_html_report
+from roi_calculator import run_and_save_roi
 from providers import telstra, optus, aussie, superloop
 from scrapers.renderer import create_renderer_scraper, SiteConfig
 import config
@@ -290,6 +291,14 @@ def run_pipeline():
                         f"({alert_report['high']} high, {alert_report['medium']} medium)")
         else:
             log_success("No new alerts")
+
+        # Step 8: Generate ROI Calculator
+        log_info("Generating ROI Calculator page")
+        roi_result = run_and_save_roi(valid_plans)
+        if 'error' not in roi_result:
+            log_success(f"ROI Calculator: {roi_result['data']['total_plans']} plans ranked")
+        else:
+            log_warning(f"ROI Calculator skipped: {roi_result.get('error')}")
         
         # Final summary
         log_info("=" * 50)
@@ -300,6 +309,7 @@ def run_pipeline():
         log_success(f"JSON save: {'Success' if json_success else 'Failed'}")
         log_success(f"Benchmark: {'Generated' if 'error' not in benchmark_report else 'Skipped'}")
         log_success(f"Alerts: {alert_report['total_alerts']} generated")
+        log_success(f"ROI Calculator: {'Generated' if 'error' not in roi_result else 'Skipped'}")
         log_info("=" * 50)
         
         return db_success and json_success
